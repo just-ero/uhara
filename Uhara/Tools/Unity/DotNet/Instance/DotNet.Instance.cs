@@ -1,0 +1,246 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Windows.Forms;
+using static Tools.Unity.DotNet.Instance.InstanceCreation;
+
+public partial class Tools
+{
+    public partial class Unity
+    {
+        public partial class DotNet
+        {
+            public partial class Instance
+            {
+                #region PUBLIC_API
+                public void SetDefaultNames(string imageName, string namespaceName = null, string className = null)
+                {
+                    try
+                    {
+                        instanceCreation.DefaultImage = imageName;
+                        if (namespaceName != null) instanceCreation.DefaultNamespace = namespaceName;
+                        if (className != null) instanceCreation.DefaultClass = className;
+                    }
+                    catch { }
+                }
+
+                public void Watch<T>(string watcherName, string fullName, params string[] fieldsNames) where T : unmanaged
+                {
+                    try
+                    {
+                        InstanceWatcherBuild watcherBuild = instanceCreation.AddArgument(ArgTypes.Instance, 1, fullName, fieldsNames);
+                        new PtrResolver().Watch<T>(watcherName, watcherBuild.Base, watcherBuild.Offsets);
+                    }
+                    catch { }
+                }
+
+                public InstanceWatcherBuild Get(string fullName, params string[] fieldsNames)
+                {
+                    try
+                    {
+                        return instanceCreation.AddArgument(ArgTypes.Instance, 1, fullName, fieldsNames);
+                    }
+                    catch { }
+                    return null;
+                }
+
+                public void Watch<T>(string watcherName, short instances, string fullName, params string[] fieldsNames) where T : unmanaged
+                {
+                    try
+                    {
+                        do
+                        {
+                            PtrResolver ptrResolver = new PtrResolver();
+                            InstanceWatcherBuildMultiple watcherBuildMultiple = instanceCreation.AddArgumentMultiple(ArgTypes.Instance, instances, fullName, fieldsNames);
+
+                            for (int i = 0; i < watcherBuildMultiple.Base.Length; i++)
+                                ptrResolver.Watch<T>(watcherName + i.ToString(), watcherBuildMultiple.Base[i], watcherBuildMultiple.Offsets);
+                        }
+                        while (false);
+                    }
+                    catch { }
+                }
+
+                public InstanceWatcherBuildMultiple Get(short instances, string fullName, params string[] fieldsNames)
+                {
+                    try
+                    {
+                        do
+                        {
+                            return instanceCreation.AddArgumentMultiple(ArgTypes.Instance, instances, fullName, fieldsNames);
+                        }
+                        while (false);
+                    }
+                    catch { }
+                    return null;
+                }
+
+                public void WatchFlag(string watcherName, string fullName)
+                {
+                    try
+                    {
+                        InstanceWatcherBuild watcherBuild = instanceCreation.AddArgument(ArgTypes.Flag, 1, fullName);
+                        new PtrResolver().Watch<ulong>(watcherName, watcherBuild.Base, watcherBuild.Offsets);
+                    }
+                    catch { }
+                }
+
+                public InstanceWatcherBuild Flag(string fullName)
+                {
+                    try
+                    {
+                        return instanceCreation.AddArgument(ArgTypes.Flag, 1, fullName);
+                    }
+                    catch { }
+                    return null;
+
+                }
+
+                public string[] GetPathString(string fullName, params string[] fieldNames)
+                {
+                    try
+                    {
+                        do
+                        {
+                            int[] offs = GetPathInt(fullName, fieldNames);
+                            if (offs == null || offs.Length == 0) break;
+
+                            string[] strs = new string[offs.Length];
+                            for (int i = 0; i < offs.Length; i++)
+                                strs[i] = "0x" + offs[i].ToString("X");
+
+                            return strs;
+                        }
+                        while (false);
+                    }
+                    catch { }
+                    return null;
+                }
+
+                public int[] GetPathInt(string fullName, params string[] fieldNames)
+                {
+                    try
+                    {
+                        do
+                        {
+                            string[] nameData = fullName.Split(':');
+                            if (nameData.Length > 3) break;
+
+                            string[] fullNameData = TArray.Merge(new string[3 - nameData.Length], nameData);
+                            string imageName = fullNameData[0] ?? instanceCreation.DefaultImage;
+                            string namespaceName = fullNameData[1] ?? instanceCreation.DefaultNamespace;
+                            string className = fullNameData[2] ?? instanceCreation.DefaultClass;
+
+                            var pathInfo = offsetResolver.GetPath(imageName, namespaceName, className, fieldNames);
+                            if (pathInfo == null) break;
+                            if (pathInfo.Offsets == null) break;
+                            if (pathInfo.Offsets.Length == 0) break;
+                            if (pathInfo.Offsets.Length < fieldNames.Length) break;
+
+                            // ---
+                            List<int> offsets = new List<int>();
+                            for (int i = 0; i < fieldNames.Length; i++)
+                                offsets.Add(pathInfo.Offsets[i]);
+
+                            return offsets.ToArray();
+                        }
+                        while (false);
+                    }
+                    catch { }
+                    return null;
+                }
+
+                public int[] GetPath(string fullName, params string[] fieldNames)
+                {
+                    try
+                    {
+                        TUtils.Print("GetPath is obsolete, use GetPathInt");
+                        do
+                        {
+                            return GetPathInt(fullName, fieldNames);
+                        }
+                        while (false);
+                    }
+                    catch { }
+                    return null;
+                }
+                #endregion
+
+                internal static string DebugClass = "Instance";
+                internal static string ToolUniqueID = "EOOJfQbxqHUdMEHX";
+
+                internal static InstanceCreation instanceCreation = null;
+                internal static GetInstances getInstances = null;
+                internal static InstanceDestroy instanceDestroy = null;
+                internal static OffsetResolver offsetResolver = null;
+
+                internal static bool LegacyVersion = false;
+
+                enum Result
+                {
+                    None = 0,
+                    Success = 1,
+                    Failed = 2
+                }
+
+                public Instance()
+                {
+                    try
+                    {
+                        while (true)
+                        {
+                            if (!Main.ReloadProcess()) throw new Exception();
+
+                            if (Main.ProcessInstance.MainWindowHandle != IntPtr.Zero)
+                                break;
+
+                            Thread.Sleep(100);
+                        }
+
+                        bool success = false;
+                        while (!success)
+                        {
+                            do
+                            {
+                                if (!Main.ReloadProcess()) throw new Exception();
+                                try
+                                {
+                                    if (Main.ProcessInstance == null) break;
+
+                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "mono-2.0-bdwgc.dll") != 0)
+                                    {
+                                        if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0) break;
+                                        byte[] modBytes = TProcess.GetModuleBytes(Main.ProcessInstance, "UnityPlayer.dll");
+                                        if (modBytes == null || modBytes.Length == 0) break;
+                                    }
+                                    else if (TProcess.GetModuleBase(Main.ProcessInstance, "mono.dll") == 0) break;
+
+                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll") == 0) break;
+                                }
+                                catch { }
+                                success = true;
+                            }
+                            while (false);
+                            Thread.Sleep(300);
+                        }
+                    }
+                    catch { return; }
+
+                    MemoryManager.ClearMemory(ToolUniqueID);
+
+                    offsetResolver = new OffsetResolver();
+                    instanceDestroy = new InstanceDestroy();
+                    getInstances = new GetInstances();
+                    instanceCreation = new InstanceCreation();
+                }
+            }
+        }
+    }
+}
