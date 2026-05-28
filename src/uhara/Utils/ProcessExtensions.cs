@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 
@@ -7,6 +8,18 @@ internal static class ProcessExtensions
 {
     extension(Process self)
     {
+        public static Process? TryGetProcessById(int processId)
+        {
+            try
+            {
+                return Process.GetProcessById(processId);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
+
         public string Token => $"{self.StartTime.ToUniversalTime().Ticks:X}-{self.Id:X}";
         public bool IsAlive => self is { HasExited: false, MainModule: not null };
 
@@ -23,7 +36,7 @@ internal static class ProcessExtensions
             }
         }
 
-        public byte[] GetModuleBytes(string name = null)
+        public byte[]? GetModuleBytes(string? name = null)
         {
             do
             {
@@ -46,7 +59,7 @@ internal static class ProcessExtensions
         {
             do
             {
-                ProcessModule module = GetModule(self, moduleName);
+                ProcessModule? module = GetModule(self, moduleName);
                 if (module == null)
                     break;
 
@@ -83,8 +96,8 @@ internal static class ProcessExtensions
                 rax = TMemory.ReadMemory<uint>(self, r11 + (rdx * 4)); // name RVA
                 rax += rbx; // absolute ptr to name string
 
-                byte[] nameBytes = TMemory.ReadMemoryBytes(self, rax, searchNameBytes.Length);
-                if (nameBytes.SequenceEqual(searchNameBytes))
+                byte[]? nameBytes = TMemory.ReadMemoryBytes(self, rax, searchNameBytes.Length);
+                if (nameBytes != null && nameBytes.SequenceEqual(searchNameBytes))
                 {
                     ulong ordinal = TMemory.ReadMemory<ushort>(self, r12 + (rdx * 2));
                     ulong funcRVA = TMemory.ReadMemory<uint>(self, r13 + (ordinal * 4));
@@ -97,7 +110,7 @@ internal static class ProcessExtensions
             return 0;
         }
 
-        public ProcessModule GetModule(string name = null)
+        public ProcessModule? GetModule(string? name = null)
         {
             if (self == null)
                 return null;

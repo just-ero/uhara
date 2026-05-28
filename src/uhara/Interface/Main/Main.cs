@@ -1,10 +1,13 @@
-﻿using LiveSplit.ComponentUtil;
+﻿using LiveSplit.ASL;
+using LiveSplit.ComponentUtil;
 using LiveSplit.Model;
+using LiveSplit.UI.Components;
 using LiveSplit.View;
 using SharpDisasm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -21,10 +24,10 @@ public partial class Main
     public FileLogger FileLogger = new();
 
     // ---
-    internal static LiveSplitState CurrentState;
+    internal static LiveSplitState? CurrentState;
 
     internal static ulong UpdateCounter = 0;
-    internal static string UniqueScriptLoadID;
+    internal static string? UniqueScriptLoadID;
 
     internal class CountableStyle
     {
@@ -37,73 +40,54 @@ public partial class Main
     internal static List<(int style, Type type, MemoryWatcher memoryWatcher, DeepPointer deepPointer)> CountableWatchers = [];
     internal static List<StringWatcher> StringWatchers = [];
 
-    internal static dynamic Vars;
+    internal static IDictionary<string, object>? Vars;
     public static bool DebugMode = true;
 
     internal static ulong LastStartTime;
 
     // ---
-    internal static dynamic _settings;
+    internal static dynamic? _settings;
 
-    internal static dynamic bf_script;
-    internal static dynamic _script
+    internal static ASLScript? _script
     {
         get
         {
-            if (bf_script == null)
+            if (field == null)
                 CheckSetProcessAndValues();
-            return bf_script;
-        }
 
-        set => bf_script = value;
+            return field;
+        }
+        set;
     }
 
-    private static volatile Process bf_ProcessInstance = null;
-    internal static Process ProcessInstance
+    internal static Process? ProcessInstance
     {
         get
         {
             do
             {
-                if (bf_ProcessInstance != null && !bf_ProcessInstance.HasExited)
-                    break;
-                bf_ProcessInstance = null;
-
-                FieldInfo gameField = _script.GetType().GetField("_game", BindingFlags.NonPublic | BindingFlags.Instance);
-                Process gameInstance = (Process)(gameField?.GetValue(_script));
-                if (gameInstance == null)
+                if (field is { HasExited: false })
                     break;
 
-                Process tempProcess = null;
-                try
-                {
-                    tempProcess = Process.GetProcessById(gameInstance.Id);
-                }
-                catch { }
+                field = null;
+
+                if (_script.GetValue<Process>("_game") is not { } gameInstance)
+                    break;
+
+                if (Process.TryGetProcessById(gameInstance.Id) is not { } tempProcess)
+                    break;
 
                 if (tempProcess.Token == gameInstance.Token)
-                    bf_ProcessInstance = tempProcess;
+                    field = tempProcess;
             }
             while (false);
-            return bf_ProcessInstance;
+            return field;
         }
-        private set
-        {
-            Process tempProcess = value;
-            Process newProcess = null;
-
-            try
-            {
-                newProcess = Process.GetProcessById(tempProcess.Id);
-            }
-            catch { }
-
-            bf_ProcessInstance = newProcess;
-        }
+        private set => field = value is not null ? Process.TryGetProcessById(value.Id) : null;
     }
 
-    internal static IDictionary<string, object> current => field ??= _script.State?.Data;
-    internal static IDictionary<string, object> old => field ??= _script.OldState?.Data;
+    internal static IDictionary<string, object>? current => field ??= _script?.State?.Data;
+    internal static IDictionary<string, object>? old => field ??= _script?.OldState?.Data;
 
     public Main()
     {
@@ -117,8 +101,8 @@ public partial class Main
             CheckSetProcessAndValues();
 
             // ---
-            Vars.Uhara = this;
-            Vars.Resolver = new PtrResolver();
+            Vars?["Uhara"] = this;
+            Vars?["Resolver"] = new PtrResolver();
         }
         catch { }
     }
@@ -146,7 +130,7 @@ public partial class Main
         return null;
     }
 
-    public Instruction[] Disassemble(byte[] bytes, nint address)
+    public Instruction[]? Disassemble(byte[] bytes, nint address)
     {
         try
         {
@@ -225,48 +209,32 @@ public partial class Main
     {
         try
         {
-            TimerForm timerForm = null;
-            foreach (Form form in Application.OpenForms)
-            {
-                if (form is TimerForm tf)
-                {
-                    timerForm = tf;
-                    break;
-                }
-            }
-
-            if (timerForm == null)
+            if (Application.OpenForms[nameof(TimerForm)] is not TimerForm timerForm)
                 return;
 
-            bf_script = null;
+            _script = null;
             CurrentState = timerForm.CurrentState;
 
-            if (CurrentState?.Run?.AutoSplitter != null && CurrentState.Run.AutoSplitter.IsActivated)
+            if (CurrentState.Run?.AutoSplitter is { IsActivated: true, Component: ASLComponent cmp })
             {
-                dynamic dynComponent = CurrentState.Run.AutoSplitter.Component;
-                bf_script = dynComponent.Script;
+                _script = cmp.Script;
             }
-
-            if (bf_script == null)
+            else
             {
-                foreach (var smth in CurrentState.Layout.LayoutComponents)
+                foreach (var cmp2 in CurrentState.Layout.Components.OfType<ASLComponent>())
                 {
-                    dynamic component = smth.Component;
-                    if (component.GetType().Name.Contains("ASLComponent"))
-                    {
-                        bf_script = component.Script;
-                        if (bf_script != null)
-                            break;
-                    }
+                    _script = cmp2.Script;
+                    if (_script != null)
+                        break;
                 }
             }
 
-            if (bf_script != null)
+            if (_script != null)
             {
-                Vars = bf_script.Vars;
+                Vars = _script.Vars;
 
-                FieldInfo settingsField = bf_script.GetType().GetField("_settings", BindingFlags.NonPublic | BindingFlags.Instance);
-                var settingsRaw = settingsField?.GetValue(bf_script);
+                FieldInfo settingsField = _script.GetType().GetField("_settings", BindingFlags.NonPublic | BindingFlags.Instance);
+                var settingsRaw = settingsField?.GetValue(_script);
                 _settings = settingsRaw;
             }
         }
@@ -283,17 +251,17 @@ public partial class Main
         TSaves2.Set(token, "ProcessCache", id, name, "Token");
     }
 
-    internal static string GetProcessCache(string id, string name)
+    internal static string? GetProcessCache(string id, string name)
     {
         string token = ProcessInstance.Token;
         if (string.IsNullOrEmpty(token))
             return null;
 
-        string data = TSaves2.Get("ProcessCache", id, name);
+        string? data = TSaves2.Get("ProcessCache", id, name);
         if (string.IsNullOrEmpty(data))
             return null;
 
-        string dataToken = TSaves2.Get("ProcessCache", id, name, "Token");
+        string? dataToken = TSaves2.Get("ProcessCache", id, name, "Token");
         if (string.IsNullOrEmpty(dataToken))
             return null;
 
@@ -302,20 +270,8 @@ public partial class Main
         return null;
     }
 
-    public object this[string key]
-    {
-        get
-        {
-            try
-            {
-                MemoryWatcher watcher = MemoryWatchers.FirstOrDefault(m => m.Name == key) ?? StringWatchers.FirstOrDefault(m => m.Name == key);
-                return watcher;
-            }
-            catch { }
-
-            return null;
-        }
-    }
+    public MemoryWatcher? this[string key] => MemoryWatchers.FirstOrDefault(m => m.Name == key)
+        ?? StringWatchers.FirstOrDefault(m => m.Name == key);
 
     public void ForceCleanMemory()
     {
@@ -332,7 +288,7 @@ public partial class Main
         try
         {
             ReloadProcess();
-            ProcessModule processModule = ProcessInstance.GetModule(moduleName);
+            ProcessModule? processModule = ProcessInstance.GetModule(moduleName);
             if (processModule == null)
                 return false;
 

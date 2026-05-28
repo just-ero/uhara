@@ -14,7 +14,7 @@ internal class TSignature
         public int Offset { get; set; }
         public bool FindStartFunction { get; set; }
 
-        public ScanData(string signature = null, bool isRelative = false, int toRelativeInstructionOffset = 0, List<KeyValuePair<string, int>> checkpoints = null, int queenCheckpointIndex = 0, bool reversed = false, int offset = 0, bool findStartFunction = false)
+        public ScanData(string signature = "", bool isRelative = false, int toRelativeInstructionOffset = 0, List<KeyValuePair<string, int>>? checkpoints = null, int queenCheckpointIndex = 0, bool reversed = false, int offset = 0, bool findStartFunction = false)
         {
             Signature = signature;
             Relative = isRelative;
@@ -33,7 +33,7 @@ internal class TSignature
         return hex.Replace("-", " ");
     }
 
-    internal static byte[] GetBytes(string signature)
+    internal static byte[]? GetBytes(string signature)
     {
         signature = signature.Replace(" ", "").Replace("!", "").ToUpper();
         byte[] byteArray = new byte[signature.Length / 2];

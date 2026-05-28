@@ -81,8 +81,9 @@ internal class TInstruction
         return instructions[0];
     }
 
-    internal static Instruction[] GetInstructions2(byte[] bytes, ulong address = 0)
+    internal static Instruction[] GetInstructions2(byte[]? bytes, ulong address = 0)
     {
+        // TODO: null
         return [.. new Disassembler(bytes, ArchitectureMode.x86_64,
         address, true).Disassemble()];
     }

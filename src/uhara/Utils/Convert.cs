@@ -3,7 +3,7 @@ using System.Globalization;
 
 internal class TConvert
 {
-    public static T Parse<T>(string number, bool forceHex = false)
+    public static T? Parse<T>(string number, bool forceHex = false)
     {
         try
         {

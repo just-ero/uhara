@@ -4,7 +4,7 @@ using System.Text;
 
 internal class TUtils
 {
-    internal static string MultibyteToString(byte[] bytes)
+    internal static string MultibyteToString(byte[]? bytes)
     {
         if (bytes == null || bytes.Length == 0)
             return string.Empty;

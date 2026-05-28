@@ -15,7 +15,7 @@ internal class TSaves2
     public static void DeleteKey(params string[] location)
     {
         string keyPath = ConstructPath(location, withoutLast: true);
-        RegistryKey key = GetCreateKey(keyPath, false);
+        RegistryKey? key = GetCreateKey(keyPath, false);
 
         if (key != null)
         {
@@ -32,7 +32,7 @@ internal class TSaves2
     public static void DeleteValue(params string[] location)
     {
         string keyPath = ConstructPath(location, withoutLast: true);
-        RegistryKey key = GetCreateKey(keyPath, false);
+        RegistryKey? key = GetCreateKey(keyPath, false);
 
         if (key != null)
         {
@@ -46,7 +46,7 @@ internal class TSaves2
         if (Registered)
         {
             string keyPath = ConstructPath(location, withoutLast: false);
-            RegistryKey key = GetCreateKey(keyPath, false);
+            RegistryKey? key = GetCreateKey(keyPath, false);
 
             if (key != null)
             {
@@ -64,7 +64,7 @@ internal class TSaves2
         if (Registered)
         {
             string keyPath = ConstructPath(location, withoutLast: false);
-            RegistryKey key = GetCreateKey(keyPath, false);
+            RegistryKey? key = GetCreateKey(keyPath, false);
 
             if (key != null)
             {
@@ -84,12 +84,12 @@ internal class TSaves2
         Registered = true;
     }
 
-    public static string Get(params string[] location)
+    public static string? Get(params string[] location)
     {
         if (Registered)
         {
             string keyPath = ConstructPath(location, withoutLast: true);
-            RegistryKey key = GetCreateKey(keyPath, false);
+            RegistryKey? key = GetCreateKey(keyPath, false);
 
             if (key != null)
             {
@@ -109,7 +109,7 @@ internal class TSaves2
         if (Registered)
         {
             string keyPath = ConstructPath(location, withoutLast: true);
-            RegistryKey key = GetCreateKey(keyPath, true);
+            RegistryKey? key = GetCreateKey(keyPath, true);
 
             if (key != null)
             {
@@ -119,23 +119,23 @@ internal class TSaves2
         }
     }
 
-    private static RegistryKey GetCreateKey(string keyPath, bool createIfNull)
+    private static RegistryKey? GetCreateKey(string keyPath, bool createIfNull)
     {
         RegistryKey hkcu = Registry.CurrentUser;
-        RegistryKey key = hkcu.OpenSubKey(keyPath, writable: true);
+        RegistryKey? key = hkcu.OpenSubKey(keyPath, writable: true);
         if (key == null)
         {
             if (createIfNull)
                 key = hkcu.CreateSubKey(keyPath);
 
             hkcu.Close();
-            return key;
         }
         else
         {
             hkcu.Close();
-            return key;
         }
+
+        return key;
     }
 
     private static string ConstructPath(string[] location, bool withoutLast)

@@ -18,7 +18,7 @@
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- <GenerateDocumentationFile>true</GenerateDocumentationFile> -->
-    <!-- <Nullable>enable</Nullable> -->
+    <Nullable>enable</Nullable>
 
     <!-- <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild> -->
     <!-- <TreatWarningsAsErrors>true</TreatWarningsAsErrors> -->
