@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>uhara10</AssemblyName>
+
+    <TargetFramework>net4.8.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(LsSrcPath)/LiveSplit.Core/LiveSplit.Core.csproj" />
+    <ProjectReference Include="$(LsSrcPath)/LiveSplit.View/LiveSplit.View.csproj" />
+
+    <ProjectReference Include="$(LsComponentsPath)/LiveSplit.ScriptableAutoSplit/src/LiveSplit.ScriptableAutoSplit/LiveSplit.ScriptableAutoSplit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.45" PrivateAssets="all" />
+    <PackageReference Include="SharpDisasm" Version="1.1.11" />
+  </ItemGroup>
+
+  <Target Name="MergeAssemblies" AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <LsPath Condition="'$(LsPath)' != ''">$(LsPath)/Components</LsPath>
+      <LsPath Condition="'$(LsPath)' == ''">$(OutputPath)</LsPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AssembliesToMerge Include="$(OutputPath)/$(AssemblyName).dll" />
+
+      <AssembliesToMerge Include="$(OutputPath)/SharpDisasm.dll" />
+    </ItemGroup>
+
+    <ILRepack
+      TargetKind="Dll"
+      InputAssemblies="@(AssembliesToMerge)"
+      LibraryPath="$(OutputPath)"
+      OutputFile="$(LsPath)/$(AssemblyName)" />
+  </Target>
+
+</Project>

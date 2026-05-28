@@ -1,7 +1,9 @@
 <Solution>
 
-  <Folder Name="/Solution Items/">
+  <Folder Name="/build/">
     <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
   </Folder>
 
   <Folder Name="/lib/">
@@ -11,6 +13,8 @@
     <Project Path="lib/LiveSplit/components/LiveSplit.ScriptableAutoSplit/src/LiveSplit.ScriptableAutoSplit/LiveSplit.ScriptableAutoSplit.csproj" />
   </Folder>
 
-  <Project Path="Uhara/Uhara.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/uhara/uhara.csproj" />
+  </Folder>
 
 </Solution>

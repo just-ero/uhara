@@ -1,0 +1,9 @@
+{
+  "files.exclude": {
+    "artifacts/": true,
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "uhara.slnx": ".editorconfig, Directory.Build.props, global.json",
+  },
+}
