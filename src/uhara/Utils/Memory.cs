@@ -1,4 +1,5 @@
-﻿using SharpDisasm;
+﻿using LiveSplit.ComponentUtil;
+using SharpDisasm;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -287,7 +288,7 @@ internal class TMemory
 
                 byte[] newRipValueBytes = BitConverter.GetBytes(ripValue - (uint)(current - original));
 
-                Main.RefWriteBytes(process, current + (ulong)(byteOffset + total), newRipValueBytes);
+                process.WriteBytes((IntPtr)(current + (ulong)(byteOffset + total)), newRipValueBytes);
             }
             else if (orgTxt.StartsWith("call"))
             {
@@ -296,7 +297,7 @@ internal class TMemory
 
                 uint ripValue = BitConverter.ToUInt32(orgFullBytes, 1);
                 byte[] newRipValueBytes = BitConverter.GetBytes(ripValue - (uint)(current - original));
-                Main.RefWriteBytes(process, current + 1 + (ulong)total, newRipValueBytes);
+                process.WriteBytes((IntPtr)(current + 1 + (ulong)total), newRipValueBytes);
             }
         }
     }
@@ -312,7 +313,7 @@ internal class TMemory
     {
         byte[] stub = new byte[] { 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00 };
         byte[] full = TArray.Merge(stub, BitConverter.GetBytes(destination));
-        Main.RefWriteBytes(process, source, full);
+        process.WriteBytes((IntPtr)source, full);
         return (ulong)full.Length;
     }
 
@@ -328,7 +329,7 @@ internal class TMemory
         if (rspArguments == 0) full = TArray.Merge(start, address, end);
         else full = TArray.Merge(subRsp, start, address, end, addRsp);
 
-        Main.RefWriteBytes(process, source, full);
+        process.WriteBytes((IntPtr)source, full);
         return (ulong)full.Length;
     }
 

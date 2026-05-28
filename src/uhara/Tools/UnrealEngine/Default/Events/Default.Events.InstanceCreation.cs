@@ -170,12 +170,12 @@ public partial class Tools
                             {
                                 byte[] classNameBytes = TUtils.StringToMultibyte(className);
                                 _classNamePtr = AddressInterfaceData;
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressInterfaceData, classNameBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressInterfaceData, classNameBytes);
                                 AddressInterfaceData += (ulong)classNameBytes.Length;
 
                                 byte[] objectNameBytes = TUtils.StringToMultibyte(objectName);
                                 _objectNamePtr = AddressInterfaceData;
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressInterfaceData, objectNameBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressInterfaceData, objectNameBytes);
                                 AddressInterfaceData += (ulong)objectNameBytes.Length;
                             }
 
@@ -196,7 +196,7 @@ public partial class Tools
                                         BitConverter.GetBytes((ulong)0x1337),
                                         BitConverter.GetBytes((ulong)0x0));
 
-                                    Main.RefWriteBytes(Main.ProcessInstance, AddressBeginDestroyCheckPool, destroyArg);
+                                    Main.ProcessInstance.WriteBytes((IntPtr)AddressBeginDestroyCheckPool, destroyArg);
                                     AddressBeginDestroyCheckPool += (ulong)destroyArg.Length;
                                 }
                                 while (false);
@@ -224,7 +224,7 @@ public partial class Tools
                                 BitConverter.GetBytes(instances)
                             );
 
-                            Main.RefWriteBytes(Main.ProcessInstance, AddressInterfaceArguments, argument);
+                            Main.ProcessInstance.WriteBytes((IntPtr)AddressInterfaceArguments, argument);
                             AddressInterfaceArguments += (ulong)argument.Length;
 
                             if (ArgTypes.Instance == argType) return (IntPtr)(_outputAddress + (ulong)OutputInstanceStruct.FirstInstanceSlot.Offset);
@@ -370,7 +370,7 @@ public partial class Tools
                             do
                             {
                                 // FNamePoolAddress
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressAllocateStart + GeneratedOffsets.ND_FNamePoolAddress,
+                                Main.ProcessInstance.WriteBytes((IntPtr)(AddressAllocateStart + GeneratedOffsets.ND_FNamePoolAddress),
                                     BitConverter.GetBytes(ToolsShared.ToolData.UnrealEngine.D_FNamePoolAddress));
 
                                 success = true;
@@ -392,7 +392,7 @@ public partial class Tools
                             {
 
                                 byte[] decoded = TArray.DecodeBlock(AsmCode);
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressNativeCode, decoded);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressNativeCode, decoded);
                                 AddressNativeCode += (ulong)decoded.Length;
 
                                 byte[] callFiller = new byte[] { 0xEB, 0x17 };
@@ -476,21 +476,21 @@ public partial class Tools
                                             if (relativeFound) stolenCode = TArray.Merge(converted);
                                         }
 
-                                        ulong jumpTable = Main.RefAllocateMemory(Main.ProcessInstance, 0x1000);
+                                        ulong jumpTable = (ulong)Main.ProcessInstance.AllocateMemory(0x1000);
                                         ulong codeCallerStart = jumpTable;
 
                                         jumpTable += TMemory.CreateAbsoluteJump(Main.ProcessInstance, jumpTable, jumpTable + 22);
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable, BitConverter.GetBytes(CommunicationSignature));
+                                        Main.ProcessInstance.WriteBytes((IntPtr)jumpTable, BitConverter.GetBytes(CommunicationSignature));
                                         jumpTable += (ulong)BitConverter.GetBytes(CommunicationSignature).Length;
 
                                         MemoryManager.AddOverwrite(jumpTable + 0, callFiller, ToolUniqueID);
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable + 0, callFiller);
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable + 25, callFiller);
+                                        Main.ProcessInstance.WriteBytes((IntPtr)(jumpTable + 0), callFiller);
+                                        Main.ProcessInstance.WriteBytes((IntPtr)(jumpTable + 25), callFiller);
 
                                         TMemory.CreateAbsoluteCall(Main.ProcessInstance, jumpTable + 0, jumpNative, 0x28);
                                         jumpTable += 50;
 
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable, stolenCode);
+                                        Main.ProcessInstance.WriteBytes((IntPtr)jumpTable, stolenCode);
                                         jumpTable += (ulong)stolenCode.Length;
 
                                         jumpTable += TMemory.CreateAbsoluteJump(Main.ProcessInstance, jumpTable, hookAddress + (ulong)minimumOverwrite);
@@ -537,22 +537,22 @@ public partial class Tools
                                         if (stolenCode == null) break;
 
                                         // ---
-                                        ulong jumpTable = Main.RefAllocateMemory(Main.ProcessInstance, 0x1000);
+                                        ulong jumpTable = (ulong)Main.ProcessInstance.AllocateMemory(0x1000);
                                         ulong codeCallerStart = jumpTable;
 
                                         jumpTable += TMemory.CreateAbsoluteJump(Main.ProcessInstance, jumpTable, jumpTable + 22);
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable, BitConverter.GetBytes(CommunicationSignature));
+                                        Main.ProcessInstance.WriteBytes((IntPtr)jumpTable, BitConverter.GetBytes(CommunicationSignature));
                                         jumpTable += (ulong)BitConverter.GetBytes(CommunicationSignature).Length;
 
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable + 0, callFiller);
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable + 25, callFiller);
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable + 50, callFiller);
+                                        Main.ProcessInstance.WriteBytes((IntPtr)(jumpTable + 0), callFiller);
+                                        Main.ProcessInstance.WriteBytes((IntPtr)(jumpTable + 25), callFiller);
+                                        Main.ProcessInstance.WriteBytes((IntPtr)(jumpTable + 50), callFiller);
 
                                         MemoryManager.AddOverwrite(jumpTable + 0, callFiller, ToolUniqueID);
                                         TMemory.CreateAbsoluteCall(Main.ProcessInstance, jumpTable + 0, jumpNative, 0x28);
                                         jumpTable += 75;
 
-                                        Main.RefWriteBytes(Main.ProcessInstance, jumpTable, stolenCode);
+                                        Main.ProcessInstance.WriteBytes((IntPtr)jumpTable, stolenCode);
                                         jumpTable += (ulong)stolenCode.Length;
 
                                         jumpTable += TMemory.CreateAbsoluteJump(Main.ProcessInstance, jumpTable, hookAddress + (ulong)minimumOverwrite);

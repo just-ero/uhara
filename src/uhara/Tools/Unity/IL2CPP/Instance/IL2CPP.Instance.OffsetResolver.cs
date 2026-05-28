@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using LiveSplit.ComponentUtil;
 
 public partial class Tools
 {
@@ -90,30 +91,30 @@ public partial class Tools
                                 AddressGlobalOutput = AllocateStart + GeneratedOffsets.AddressGlobalOutput;
 
                                 int cleanSize = (int)((AllocateStart + AllocateSize) - AddressArguments);
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArguments, new byte[cleanSize]);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArguments, new byte[cleanSize]);
                             }
 
                             // standard names
                             {
                                 // image
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArguments, BitConverter.GetBytes(AddressArgumentsData));
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArguments, BitConverter.GetBytes(AddressArgumentsData));
                                 AddressArguments += 0x8;
                                 byte[] imageNameBytes = TUtils.StringToMultibyte(imageName + ".dll");
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, imageNameBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, imageNameBytes);
                                 AddressArgumentsData += (ulong)imageNameBytes.Length;
 
                                 // namespace
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArguments, BitConverter.GetBytes(AddressArgumentsData));
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArguments, BitConverter.GetBytes(AddressArgumentsData));
                                 AddressArguments += 0x8;
                                 byte[] namespaceNameBytes = TUtils.StringToMultibyte(namespaceName);
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, namespaceNameBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, namespaceNameBytes);
                                 AddressArgumentsData += (ulong)namespaceNameBytes.Length;
 
                                 // class
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArguments, BitConverter.GetBytes(AddressArgumentsData));
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArguments, BitConverter.GetBytes(AddressArgumentsData));
                                 AddressArguments += 0x8;
                                 byte[] classNameBytes = TUtils.StringToMultibyte(className);
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, classNameBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, classNameBytes);
                                 AddressArgumentsData += (ulong)classNameBytes.Length;
                             }
 
@@ -121,10 +122,10 @@ public partial class Tools
                             {
                                 foreach (string fieldName in fieldsNames)
                                 {
-                                    Main.RefWriteBytes(Main.ProcessInstance, AddressArguments, BitConverter.GetBytes(AddressArgumentsData));
+                                    Main.ProcessInstance.WriteBytes((IntPtr)AddressArguments, BitConverter.GetBytes(AddressArgumentsData));
                                     AddressArguments += 0x8;
                                     byte[] nameBytes = TUtils.StringToMultibyte(fieldName);
-                                    Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, nameBytes);
+                                    Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, nameBytes);
                                     AddressArgumentsData += (ulong)nameBytes.Length;
                                 }
                             }
@@ -179,7 +180,7 @@ public partial class Tools
                             if (AllocateStart == 0) break;
 
                             byte[] decoded = TArray.DecodeBlock(AsmCode);
-                            Main.RefWriteBytes(Main.ProcessInstance, AllocateStart, decoded);
+                            Main.ProcessInstance.WriteBytes((IntPtr)AllocateStart, decoded);
 
                             AddressArguments = AllocateStart + GeneratedOffsets.AddressArguments;
                             AddressArgumentsData = AllocateStart + GeneratedOffsets.AddressArgumentsData;
@@ -217,9 +218,9 @@ public partial class Tools
                                     if (_Sleep == 0 || _GetModuleHandleA == 0 || _GetProcAddress == 0)
                                         break;
 
-                                    Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.Sleep, BitConverter.GetBytes(_Sleep));
-                                    Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.GetModuleHandleA, BitConverter.GetBytes(_GetModuleHandleA));
-                                    Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.GetProcAddress, BitConverter.GetBytes(_GetProcAddress));
+                                    Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.Sleep), BitConverter.GetBytes(_Sleep));
+                                    Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.GetModuleHandleA), BitConverter.GetBytes(_GetModuleHandleA));
+                                    Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.GetProcAddress), BitConverter.GetBytes(_GetProcAddress));
 
                                     result = Result.Success;
                                 }

@@ -132,15 +132,6 @@ public partial class Main
             // ---
             Vars.Uhara = this;
             Vars.Resolver = new PtrResolver();
-
-            // ---
-            Assembly liveSplitAssembly = Assembly.Load("LiveSplit.Core");
-            Type extensionMethodsType = liveSplitAssembly.GetType("LiveSplit.ComponentUtil.ExtensionMethods");
-
-            _RefAllocateMemory = extensionMethodsType.GetMethod("AllocateMemory", new Type[] { typeof(Process), typeof(int) });
-            _RefReadBytes = extensionMethodsType.GetMethod("ReadBytes", new Type[] { typeof(Process), typeof(IntPtr), typeof(int) });
-            _RefWriteBytes = extensionMethodsType.GetMethod("WriteBytes", new Type[] { typeof(Process), typeof(IntPtr), typeof(byte[]) });
-            _RefCreateThread = extensionMethodsType.GetMethod("CreateThread", new Type[] { typeof(Process), typeof(IntPtr) });
         }
         catch { }
     }
@@ -301,30 +292,6 @@ public partial class Main
 
         if (token == dataToken) return data;
         return null;
-    }
-
-    internal static MethodInfo _RefAllocateMemory;
-    internal static ulong RefAllocateMemory(Process process, int size)
-    {
-        return (ulong)(IntPtr)_RefAllocateMemory.Invoke(null, new object[] { process, size });
-    }
-
-    internal static MethodInfo _RefReadBytes;
-    internal static byte[] RefReadBytes(Process process, ulong address, int count)
-    {
-        return (byte[])_RefReadBytes.Invoke(null, new object[] { process, (IntPtr)address, count });
-    }
-
-    internal static MethodInfo _RefWriteBytes;
-    internal static void RefWriteBytes(Process process, ulong address, byte[] bytes)
-    {
-        _RefWriteBytes.Invoke(null, new object[] { process, (IntPtr)address, bytes });
-    }
-
-    internal static MethodInfo _RefCreateThread;
-    internal static void RefCreateThread(Process process, ulong address)
-    {
-        _RefCreateThread.Invoke(null, new object[] { process, (IntPtr)address });
     }
 
     public object this[string key]

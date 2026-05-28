@@ -1,4 +1,5 @@
-﻿using SharpDisasm;
+﻿using LiveSplit.ComponentUtil;
+using SharpDisasm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -214,7 +215,7 @@ public partial class Tools
 
                             if (pathInfo.DirectAddress != 0)
                             {
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, BitConverter.GetBytes(pathInfo.DirectAddress));
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, BitConverter.GetBytes(pathInfo.DirectAddress));
                                 AddressArgumentsData += 0x8;
 
                                 BaseCache[baseFullName] = AddressArgumentsData - 0x8;
@@ -243,17 +244,17 @@ public partial class Tools
                             {
                                 byte[] imageNameBytes = TUtils.StringToMultibyte(imageName + ".dll");
                                 _imageNamePtr = AddressArgumentsData;
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, imageNameBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, imageNameBytes);
                                 AddressArgumentsData += (ulong)imageNameBytes.Length;
 
                                 byte[] namespaceNameBytes = TUtils.StringToMultibyte(namespaceName);
                                 _namespaceNamePtr = AddressArgumentsData;
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, namespaceNameBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, namespaceNameBytes);
                                 AddressArgumentsData += (ulong)namespaceNameBytes.Length;
 
                                 byte[] classNameBytes = TUtils.StringToMultibyte(className);
                                 _classNamePtr = AddressArgumentsData;
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, classNameBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, classNameBytes);
                                 AddressArgumentsData += (ulong)classNameBytes.Length;
                             }
 
@@ -286,7 +287,7 @@ public partial class Tools
                             if (ArgTypes.Instance == argType) returnUlong = _outputAddress + (ulong)OutputInstanceStruct.FirstInstanceSlot.Offset;
                             else if (ArgTypes.Flag == argType) returnUlong = _outputAddress + (ulong)OutputFlagStruct.FlagCounter.Offset;
 
-                            Main.RefWriteBytes(Main.ProcessInstance, AddressArguments, argument);
+                            Main.ProcessInstance.WriteBytes((IntPtr)AddressArguments, argument);
                             AddressArguments += (ulong)ArgStruct.End.Offset;
 
                             // update other tool
@@ -337,7 +338,7 @@ public partial class Tools
                                 if (AllocateStart == 0) break;
 
                                 byte[] decoded = TArray.DecodeBlock(AsmCode);
-                                Main.RefWriteBytes(Main.ProcessInstance, AllocateStart, decoded);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AllocateStart, decoded);
 
                                 AddressArguments = AllocateStart + GeneratedOffsets.AddressArguments;
                                 AddressArgumentsData = AllocateStart + GeneratedOffsets.AddressArgumentsData;
@@ -378,9 +379,9 @@ public partial class Tools
 										if (_Sleep == 0 || _GetModuleHandleA == 0 || _GetProcAddress == 0)
 											break;
 
-										Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.Sleep, BitConverter.GetBytes(_Sleep));
-										Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.GetModuleHandleA, BitConverter.GetBytes(_GetModuleHandleA));
-										Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.GetProcAddress, BitConverter.GetBytes(_GetProcAddress));
+										Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.Sleep), BitConverter.GetBytes(_Sleep));
+										Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.GetModuleHandleA), BitConverter.GetBytes(_GetModuleHandleA));
+										Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.GetProcAddress), BitConverter.GetBytes(_GetProcAddress));
 
                                         result = Result.Success;
 									}
@@ -429,7 +430,7 @@ public partial class Tools
 
                                     stolenCode = FixCall(stolenCode, hookAddress);
 
-                                    Main.RefWriteBytes(Main.ProcessInstance, AddressFreeUse, stolenCode);
+                                    Main.ProcessInstance.WriteBytes((IntPtr)AddressFreeUse, stolenCode);
 									AddressFreeUse += (ulong)stolenCode.Length;
 
 									AddressFreeUse += TMemory.CreateAbsoluteCall(Main.ProcessInstance, AddressFreeUse, jumpNative, 0x28);

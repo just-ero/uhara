@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using LiveSplit.ComponentUtil;
 
 public partial class Tools
 {
@@ -48,7 +49,7 @@ public partial class Tools
 
                         // ---
                         ulong fpsLimitMicro = (fps == 0 || fps < 0) ? 0 : (ulong)((1000 / fps) * 1000);
-                        Main.RefWriteBytes(Main.ProcessInstance, AddressAllocateStart + ARG_FpsLimitMicroS, BitConverter.GetBytes(fpsLimitMicro));
+                        Main.ProcessInstance.WriteBytes((IntPtr)(AddressAllocateStart + ARG_FpsLimitMicroS), BitConverter.GetBytes(fpsLimitMicro));
                     }
                     #endregion
                     #region PRIVATE_API
@@ -130,7 +131,7 @@ public partial class Tools
                                 ulong jumpTo = AddressFreeUse + HK_EndDrawing;
 
                                 byte[] decodedAsm = TArray.DecodeBlock(AsmCode);
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressAllocateStart, decodedAsm);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressAllocateStart, decodedAsm);
                                 AddressFreeUse += (ulong)decodedAsm.Length;
 
                                 int minimumOverwrite = TInstruction.GetMinimumOverwrite(Main.ProcessInstance, EndDrawing, 14);
@@ -142,7 +143,7 @@ public partial class Tools
                                 MemoryManager.AddOverwrite(EndDrawing, enemyCode, ToolUniqueID);
 
                                 // ---
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressFreeUse, enemyCode);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressFreeUse, enemyCode);
                                 AddressFreeUse += (ulong)enemyCode.Length;
 
                                 AddressFreeUse += TMemory.CreateAbsoluteJump(Main.ProcessInstance, AddressFreeUse, EndDrawing + (ulong)minimumOverwrite);

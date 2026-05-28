@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
+using LiveSplit.ComponentUtil;
 
 public partial class Tools
 {
@@ -87,21 +88,21 @@ public partial class Tools
                             {
                                 _imageNamePtr = AddressArgumentsData;
                                 byte[] textBytes = TUtils.StringToMultibyte(imageName + ".dll");
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, textBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, textBytes);
                                 AddressArgumentsData += (ulong)textBytes.Length;
                             }
 
                             {
                                 _namespaceNamePtr = AddressArgumentsData;
                                 byte[] textBytes = TUtils.StringToMultibyte(namespaceName);
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, textBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, textBytes);
                                 AddressArgumentsData += (ulong)textBytes.Length;
                             }
 
                             {
                                 _classNamePtr = AddressArgumentsData;
                                 byte[] textBytes = TUtils.StringToMultibyte(className);
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArgumentsData, textBytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArgumentsData, textBytes);
                                 AddressArgumentsData += (ulong)textBytes.Length;
                             }
                         }
@@ -117,7 +118,7 @@ public partial class Tools
                         );
 
                         // write argument bytes
-                        Main.RefWriteBytes(Main.ProcessInstance, AddressArguments, argument);
+                        Main.ProcessInstance.WriteBytes((IntPtr)AddressArguments, argument);
                         AddressArguments += (ulong)ArgStruct.End.Offset;
                     }
                     #endregion
@@ -151,7 +152,7 @@ public partial class Tools
                                 if (AllocateStart == 0) break;
 
                                 byte[] decoded = TArray.DecodeBlock(AsmCode);
-                                Main.RefWriteBytes(Main.ProcessInstance, AllocateStart, decoded);
+                                Main.ProcessInstance.WriteBytes((IntPtr)AllocateStart, decoded);
 
                                 AddressArguments = AllocateStart + GeneratedOffsets.AddressArguments;
                                 AddressArgumentsData = AllocateStart + GeneratedOffsets.AddressArgumentsData;
@@ -231,7 +232,7 @@ public partial class Tools
                                     }
 
                                     if (_IL2CPPCompile == 0) break;
-                                    else Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.IL2CPPCompile,
+                                    else Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.IL2CPPCompile),
                                             BitConverter.GetBytes(_IL2CPPCompile));
                                 }
                             }
@@ -247,9 +248,9 @@ public partial class Tools
                                 if (_Sleep == 0 || _GetModuleHandleA == 0 || _GetProcAddress == 0)
                                     break;
 
-                                Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.Sleep, BitConverter.GetBytes(_Sleep));
-                                Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.GetModuleHandleA, BitConverter.GetBytes(_GetModuleHandleA));
-                                Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.GetProcAddress, BitConverter.GetBytes(_GetProcAddress));
+                                Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.Sleep), BitConverter.GetBytes(_Sleep));
+                                Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.GetModuleHandleA), BitConverter.GetBytes(_GetModuleHandleA));
+                                Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.GetProcAddress), BitConverter.GetBytes(_GetProcAddress));
                             }
 
                             // ---
@@ -274,7 +275,7 @@ public partial class Tools
                                     // ---
                                     ulong preFun = AddressFreeUse;
 
-                                    Main.RefWriteBytes(Main.ProcessInstance, AddressFreeUse, stolen);
+                                    Main.ProcessInstance.WriteBytes((IntPtr)AddressFreeUse, stolen);
                                     AddressFreeUse += (ulong)stolen.Length;
                                     AddressFreeUse += TMemory.CreateAbsoluteJump(Main.ProcessInstance, AddressFreeUse, function + (ulong)minimumOverwrite);
 
@@ -288,7 +289,7 @@ public partial class Tools
                                     };
                                     TArray.Insert(update, BitConverter.GetBytes(AllocateStart + GeneratedOffsets.NewSceneLoaded_Current), 2);
 
-                                    Main.RefWriteBytes(Main.ProcessInstance, AddressFreeUse, update);
+                                    Main.ProcessInstance.WriteBytes((IntPtr)AddressFreeUse, update);
                                     AddressFreeUse += (ulong)update.Length;
 
                                     TMemory.CreateAbsoluteJump(Main.ProcessInstance, function, hookPoint);

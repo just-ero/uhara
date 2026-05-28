@@ -1,4 +1,5 @@
-﻿using SharpDisasm;
+﻿using LiveSplit.ComponentUtil;
+using SharpDisasm;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -156,8 +157,8 @@ public partial class Tools
                             BitConverter.GetBytes((short)arg4.Length), arg4,
                             BitConverter.GetBytes((short)arg5.Length), arg5);
 
-                        Main.RefWriteBytes(Main.ProcessInstance, InterfaceArguments + 0x8, all);
-                        Main.RefWriteBytes(Main.ProcessInstance, InterfaceArguments + 0x2, BitConverter.GetBytes((short)all.Length));
+                        Main.ProcessInstance.WriteBytes((IntPtr)(InterfaceArguments + 0x8), all);
+                        Main.ProcessInstance.WriteBytes((IntPtr)(InterfaceArguments + 0x2), BitConverter.GetBytes((short)all.Length));
 
                         QueueItems.Add(new QueueItem(GlobalOutput + 0x8 + 0x2, hookOffset, overwriteSize, bytes));
                         InterfaceArguments += 0x8 + (ulong)all.Length;
@@ -190,7 +191,7 @@ public partial class Tools
 
                                 funcAddress += (ulong)item.HookOffset;
 
-                                Main.RefWriteBytes(Main.ProcessInstance, item.HookAddress, BitConverter.GetBytes((ulong)0));
+                                Main.ProcessInstance.WriteBytes((IntPtr)item.HookAddress, BitConverter.GetBytes((ulong)0));
 
                                 int minimumOverwrite = item.OverwriteSize;
                                 if (minimumOverwrite == 0) minimumOverwrite =
@@ -203,10 +204,10 @@ public partial class Tools
                                 realCode = FixCmp(funcAddress, realCode);
                                 realCode = FixJump(funcAddress, realCode);
 
-                                Main.RefWriteBytes(Main.ProcessInstance, item.HookAddress, item.Bytes);
+                                Main.ProcessInstance.WriteBytes((IntPtr)item.HookAddress, item.Bytes);
                                 ulong nextAddress = item.HookAddress + (ulong)item.Bytes.Length;
 
-                                Main.RefWriteBytes(Main.ProcessInstance, nextAddress, realCode);
+                                Main.ProcessInstance.WriteBytes((IntPtr)nextAddress, realCode);
                                 nextAddress += (ulong)realCode.Length;
 
                                 TMemory.CreateAbsoluteJump(Main.ProcessInstance, nextAddress, funcAddress + (ulong)minimumOverwrite);
@@ -330,7 +331,7 @@ public partial class Tools
                             QueueItems.Clear();
 
                             byte[] asmDecoded = DecodeAsmBlock(AsmBlocks.UnityCPP_JitSave);
-                            Main.RefWriteBytes(Main.ProcessInstance, NativeCode, asmDecoded);
+                            Main.ProcessInstance.WriteBytes((IntPtr)NativeCode, asmDecoded);
                         }
                     }
                     catch { TUtils.Print("Creating tool failed"); }

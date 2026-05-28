@@ -1,4 +1,5 @@
-﻿using SharpDisasm;
+﻿using LiveSplit.ComponentUtil;
+using SharpDisasm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -123,12 +124,12 @@ public partial class Tools
                     #endregion
 
                     byte[] decoded = TArray.DecodeBlock(AsmCode);
-                    Main.RefWriteBytes(Main.ProcessInstance, allocated, decoded);
+                    Main.ProcessInstance.WriteBytes((IntPtr)allocated, decoded);
 
-                    Main.RefWriteBytes(Main.ProcessInstance, allocated, BitConverter.GetBytes(fps)); allocated += 0x8;
-                    Main.RefWriteBytes(Main.ProcessInstance, allocated, BitConverter.GetBytes(gEnginePtr)); allocated += 0x8;
-                    Main.RefWriteBytes(Main.ProcessInstance, allocated, BitConverter.GetBytes(setFpsVtableOffset)); allocated += 0x8;
-                    Main.RefWriteBytes(Main.ProcessInstance, allocated, BitConverter.GetBytes(sleep)); allocated += 0x8;
+                    Main.ProcessInstance.WriteBytes((IntPtr)allocated, BitConverter.GetBytes(fps)); allocated += 0x8;
+                    Main.ProcessInstance.WriteBytes((IntPtr)allocated, BitConverter.GetBytes(gEnginePtr)); allocated += 0x8;
+                    Main.ProcessInstance.WriteBytes((IntPtr)allocated, BitConverter.GetBytes(setFpsVtableOffset)); allocated += 0x8;
+                    Main.ProcessInstance.WriteBytes((IntPtr)allocated, BitConverter.GetBytes(sleep)); allocated += 0x8;
                     MemoryManager.AddOverwrite(allocated, BitConverter.GetBytes((ulong)1)); allocated += 0x8;
 
                     ulong threadHere = allocated;
@@ -192,15 +193,15 @@ public partial class Tools
                 if (stolen == null) break;
                 MemoryManager.AddOverwrite(address, stolen, uniqueId);
 
-                Main.RefWriteBytes(Main.ProcessInstance, allocated, BitConverter.GetBytes(fps));
+                Main.ProcessInstance.WriteBytes((IntPtr)allocated, BitConverter.GetBytes(fps));
                 allocated += 0x8;
 
                 ulong myCodeStart = allocated;
 
                 byte[] overwriteXmm = new byte[] { 0x50, 0x48, 0x8B, 0x05, 0xF0, 0xFF, 0xFF, 0xFF, 0x66, 0x48, 0x0F, 0x6E, 0xC0, 0x58 };
-                Main.RefWriteBytes(Main.ProcessInstance, allocated, overwriteXmm);
+                Main.ProcessInstance.WriteBytes((IntPtr)allocated, overwriteXmm);
                 allocated += (ulong)overwriteXmm.Length;
-                Main.RefWriteBytes(Main.ProcessInstance, allocated, stolen);
+                Main.ProcessInstance.WriteBytes((IntPtr)allocated, stolen);
                 allocated += (ulong)stolen.Length;
 
                 TMemory.CreateAbsoluteJump(Main.ProcessInstance, allocated, address + (ulong)minimumOverwrite);

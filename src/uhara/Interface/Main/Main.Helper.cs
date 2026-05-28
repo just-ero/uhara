@@ -36,10 +36,10 @@ public partial class Main
                 allocate += 0x8;
 
                 byte[] flagAsm = new byte[] { 0x83, 0x05, 0xF1, 0xFF, 0xFF, 0xFF, 0x01, 0x90 };
-                RefWriteBytes(ProcessInstance, allocate, flagAsm);
+                ProcessInstance.WriteBytes((IntPtr)allocate, flagAsm);
                 allocate += (ulong)flagAsm.Length;
 
-                RefWriteBytes(ProcessInstance, allocate, stolen);
+                ProcessInstance.WriteBytes((IntPtr)allocate, stolen);
                 allocate += (ulong)stolen.Length;
 
                 TMemory.CreateAbsoluteJump(ProcessInstance, allocate, address + (ulong)minimumOverwrite);
@@ -103,7 +103,7 @@ public partial class Main
             }
             else
             {
-                ulong allocated = RefAllocateMemory(ProcessInstance, 0x100);
+                ulong allocated = (ulong)ProcessInstance.AllocateMemory(0x100);
                 if (allocated == 0) return IntPtr.Zero;
 
                 byte[] stolen = TMemory.ReadMemoryBytes(ProcessInstance, address, overwriteSize);
@@ -119,8 +119,8 @@ public partial class Main
                 byte[] s2 = BitConverter.GetBytes(allocated + 0x8);
                 byte[] start = TArray.Merge(s1, s2);
 
-                RefWriteBytes(ProcessInstance, allocated + 0x8, end);
-                RefWriteBytes(ProcessInstance, (ulong)address, start);
+                ProcessInstance.WriteBytes((IntPtr)(allocated + 0x8), end);
+                ProcessInstance.WriteBytes(address, start);
 
                 return (IntPtr)allocated;
             }
@@ -184,7 +184,7 @@ public partial class Main
         return "";
     }
 
-    public readonly Dictionary<string, byte[]> SaveRegBytes  = new Dictionary<string, byte[]>
+    public readonly Dictionary<string, byte[]> SaveRegBytes = new Dictionary<string, byte[]>
     {
         { "rax", new byte[] { 0x48, 0x89, 0x05, 0xF1, 0xFF, 0xFF, 0xFF } },
         { "rbx", new byte[] { 0x48, 0x89, 0x1D, 0xF1, 0xFF, 0xFF, 0xFF } },

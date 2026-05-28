@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using LiveSplit.ComponentUtil;
 
 internal class MemoryManager
 {
@@ -45,7 +46,7 @@ internal class MemoryManager
         {
             do
             {
-                ulong allocated = Main.RefAllocateMemory(Main.ProcessInstance, size);
+                ulong allocated = (ulong)Main.ProcessInstance.AllocateMemory(size);
                 if (allocated == 0) break;
 
                 FreeLargeMemoryInternal(allocated, size, time);
@@ -69,7 +70,7 @@ internal class MemoryManager
                 ulong _VirtualFree = TProcess.GetProcAddress(Main.ProcessInstance, "kernel32.dll", "VirtualFree");
                 if (_VirtualFree == 0) break;
 
-                ulong allocated = Main.RefAllocateMemory(Main.ProcessInstance, 0x1000);
+                ulong allocated = (ulong)Main.ProcessInstance.AllocateMemory(0x1000);
                 if (allocated == 0) break;
 
                 byte[] bytesExec = new byte[]
@@ -88,8 +89,8 @@ internal class MemoryManager
                     BitConverter.GetBytes(_VirtualFree),
                     bytesExec);
 
-                Main.RefWriteBytes(Main.ProcessInstance, allocated, writeBytes);
-                Main.RefCreateThread(Main.ProcessInstance, allocated + 0x28);
+                Main.ProcessInstance.WriteBytes((IntPtr)allocated, writeBytes);
+                Main.ProcessInstance.CreateThread((IntPtr)(allocated + 0x28));
             }
             while (false);
         }
@@ -121,7 +122,7 @@ internal class MemoryManager
 
                             if (address == 0 || recover == null) continue;
 
-                            Main.RefWriteBytes(Main.ProcessInstance, address, recover);
+                            Main.ProcessInstance.WriteBytes((IntPtr)address, recover);
                             if (!TMemory.ConfirmBytes(Main.ProcessInstance, address, recover))
                                 throw new Exception("Memory recovery exception");
 
@@ -159,7 +160,7 @@ internal class MemoryManager
     {
         try
         {
-            ulong address = Main.RefAllocateMemory(Main.ProcessInstance, size);
+            ulong address = (ulong)Main.ProcessInstance.AllocateMemory(size);
             if (address != 0)
             {
                 string token = TProcess.GetToken(Main.ProcessInstance);

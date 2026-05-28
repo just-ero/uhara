@@ -1,4 +1,5 @@
-﻿using SharpDisasm;
+﻿using LiveSplit.ComponentUtil;
+using SharpDisasm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +59,7 @@ public partial class Tools
                             if (!Loaded) break;
                             for (int i = 0; i < instances; i++)
                             {
-                                Main.RefWriteBytes(Main.ProcessInstance, AddressArguments, BitConverter.GetBytes(instancePtr + (ulong)(i * 0x8)));
+                                Main.ProcessInstance.WriteBytes((IntPtr)AddressArguments, BitConverter.GetBytes(instancePtr + (ulong)(i * 0x8)));
                                 AddressArguments += 0x8;
                             }
                         }
@@ -218,7 +219,7 @@ public partial class Tools
                             if (AllocateStart == 0) break;
 
                             byte[] decoded = TArray.DecodeBlock(AsmCode);
-                            Main.RefWriteBytes(Main.ProcessInstance, AllocateStart, decoded);
+                            Main.ProcessInstance.WriteBytes((IntPtr)AllocateStart, decoded);
 
                             AddressArguments = AllocateStart + GeneratedOffsets.AddressArguments;
                             AddressArgumentsData = AllocateStart + GeneratedOffsets.AddressArgumentsData;
@@ -237,8 +238,8 @@ public partial class Tools
                         Result result = Result.None;
                         do
                         {
-                            Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.ReturnAddress, BitConverter.GetBytes(CallFinalSetField + 0x6));
-                            Main.RefWriteBytes(Main.ProcessInstance, AllocateStart + GeneratedOffsets.mono_gc_wbarrier_set_field, BitConverter.GetBytes(TProcess.GetProcAddress(Main.ProcessInstance, "mono-2.0-bdwgc.dll", "mono_gc_wbarrier_set_field")));
+                            Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.ReturnAddress), BitConverter.GetBytes(CallFinalSetField + 0x6));
+                            Main.ProcessInstance.WriteBytes((IntPtr)(AllocateStart + GeneratedOffsets.mono_gc_wbarrier_set_field), BitConverter.GetBytes(TProcess.GetProcAddress(Main.ProcessInstance, "mono-2.0-bdwgc.dll", "mono_gc_wbarrier_set_field")));
                             result = Result.Success;
                         }
                         while (false);
@@ -258,7 +259,7 @@ public partial class Tools
                             if (saveBytes == null || saveBytes.Length == 0) break;
 
                             MemoryManager.AddOverwrite(setFieldPtr, saveBytes, ToolUniqueID);
-                            Main.RefWriteBytes(Main.ProcessInstance, setFieldPtr, BitConverter.GetBytes(AllocateStart + GeneratedOffsets.HK_HookPoint));
+                            Main.ProcessInstance.WriteBytes((IntPtr)setFieldPtr, BitConverter.GetBytes(AllocateStart + GeneratedOffsets.HK_HookPoint));
 
                             //TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
                             //" | " + "Hook: " + "0x" + CallFinalSetField.ToString("X"));
