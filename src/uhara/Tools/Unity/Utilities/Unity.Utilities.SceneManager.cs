@@ -63,7 +63,7 @@ public partial class Tools
                                 if (offsetEnd <= offset)
                                     break;
 
-                                byte[] extractNameBytes = TArray.Extract(globalgamemanagersBytes, offset, offsetEnd - offset);
+                                byte[] extractNameBytes = globalgamemanagersBytes.AsSpan(offset, offsetEnd - offset).ToArray();
                                 string sceneNamePath = TUtils.MultibyteToString(extractNameBytes);
                                 string sceneName = Path.GetFileNameWithoutExtension(sceneNamePath);
 

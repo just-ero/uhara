@@ -156,12 +156,14 @@ public partial class Tools
                         byte[] _bytesSize = BitConverter.GetBytes((short)bytes.Length);
 
                         // ---
-                        byte[] all = TArray.Merge(
-                            BitConverter.GetBytes((short)arg1.Length), arg1,
-                            BitConverter.GetBytes((short)arg2.Length), arg2,
-                            BitConverter.GetBytes((short)arg3.Length), arg3,
-                            BitConverter.GetBytes((short)arg4.Length), arg4,
-                            BitConverter.GetBytes((short)arg5.Length), arg5);
+                        byte[] all =
+                        [
+                            .. BitConverter.GetBytes((short)arg1.Length), .. arg1,
+                            .. BitConverter.GetBytes((short)arg2.Length), .. arg2,
+                            .. BitConverter.GetBytes((short)arg3.Length), .. arg3,
+                            .. BitConverter.GetBytes((short)arg4.Length), .. arg4,
+                            .. BitConverter.GetBytes((short)arg5.Length), .. arg5
+                        ];
 
                         Main.ProcessInstance.WriteBytes((nint)(InterfaceArguments + 0x8), all);
                         Main.ProcessInstance.WriteBytes((nint)(InterfaceArguments + 0x2), BitConverter.GetBytes((short)all.Length));

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using static TImports;
 
 internal class TMemory
@@ -221,7 +220,7 @@ internal class TMemory
             offset += ins.Bytes.Length;
         }
 
-        return TArray.Merge(newBytes);
+        return [.. newBytes.SelectMany(self => self)];
     }
 
     internal static ulong GetActualAddressFromRelative5ByteInstruction(byte[] bytes, ulong address)
@@ -326,14 +325,14 @@ internal class TMemory
     internal static byte[] GetAbsoluteJumpBytes(ulong destination)
     {
         byte[] stub = [0xFF, 0x25, 0x00, 0x00, 0x00, 0x00];
-        byte[] full = TArray.Merge(stub, BitConverter.GetBytes(destination));
+        byte[] full = [.. stub, .. BitConverter.GetBytes(destination)];
         return full;
     }
 
     internal static ulong CreateAbsoluteJump(Process process, ulong source, ulong destination)
     {
         byte[] stub = [0xFF, 0x25, 0x00, 0x00, 0x00, 0x00];
-        byte[] full = TArray.Merge(stub, BitConverter.GetBytes(destination));
+        byte[] full = [.. stub, .. BitConverter.GetBytes(destination)];
         process.WriteBytes((nint)source, full);
         return (ulong)full.Length;
     }
@@ -346,11 +345,9 @@ internal class TMemory
         byte[] end = [0xFF, 0x15, 0xF2, 0xFF, 0xFF, 0xFF, 0x90];
         byte[] addRsp = [0x48, 0x83, 0xC4, rspArguments];
 
-        byte[] full = null;
-        if (rspArguments == 0)
-            full = TArray.Merge(start, address, end);
-        else
-            full = TArray.Merge(subRsp, start, address, end, addRsp);
+        byte[] full = rspArguments == 0
+            ? [.. start, .. address, .. end]
+            : [.. subRsp, .. start, .. address, .. end, .. addRsp];
 
         process.WriteBytes((nint)source, full);
         return (ulong)full.Length;
@@ -361,7 +358,7 @@ internal class TMemory
         byte[] start = [0xEB, 0x08];
         byte[] address = BitConverter.GetBytes(destination);
         byte[] end = [0xFF, 0x15, 0xF2, 0xFF, 0xFF, 0xFF, 0x90];
-        return TArray.Merge(start, address, end);
+        return [.. start, .. address, .. end];
     }
 
     public static ulong ScanAdvanced(Process process, TSignature.ScanData scanData, string moduleName = null)
@@ -405,13 +402,7 @@ internal class TMemory
                     byte[] searchBytes = TSignature.GetBytes(separateSigs[k]);
                     string searchMask = TSignature.GetMask(separateSigs[k]);
 
-                    int maxDistance = 0;
-
-                    if (checkpoints[j].Value == 0)
-                        maxDistance = 0;
-                    else
-                        maxDistance = checkpoints[j].Value;
-
+                    int maxDistance = checkpoints[j].Value;
                     if (scanData.ReversedSearch && j != 0 && k == 0)
                     {
                         searchOffset -= checkpoints[j].Value;
@@ -738,42 +729,11 @@ internal class TMemory
         return ReadMemory<T>(process, (nint)address);
     }
 
-    internal static T ReadMemory<T>(Process process, nint address) where T : unmanaged
+    internal static unsafe T ReadMemory<T>(Process process, nint address) where T : unmanaged
     {
-        int typeSize = Marshal.SizeOf(typeof(T));
-        byte[] data = new byte[typeSize];
-
-        if (ReadProcessMemory(process.Handle, address, data, data.Length, out _))
-        {
-            if (typeof(T) == typeof(nint))
-                return (T)(object)(nint)BitConverter.ToUInt64(data, 0);
-            else if (typeof(T) == typeof(bool))
-                return (T)(object)BitConverter.ToBoolean(data, 0);
-            else if (typeof(T) == typeof(byte))
-                return (T)(object)data[0];
-            else if (typeof(T) == typeof(sbyte))
-                return (T)(object)data[0];
-            else if (typeof(T) == typeof(char))
-                return (T)(object)data[0];
-            else if (typeof(T) == typeof(short))
-                return (T)(object)BitConverter.ToInt16(data, 0);
-            else if (typeof(T) == typeof(ushort))
-                return (T)(object)BitConverter.ToUInt16(data, 0);
-            else if (typeof(T) == typeof(int))
-                return (T)(object)BitConverter.ToInt32(data, 0);
-            else if (typeof(T) == typeof(uint))
-                return (T)(object)BitConverter.ToUInt32(data, 0);
-            else if (typeof(T) == typeof(long))
-                return (T)(object)BitConverter.ToInt64(data, 0);
-            else if (typeof(T) == typeof(ulong))
-                return (T)(object)BitConverter.ToUInt64(data, 0);
-            else if (typeof(T) == typeof(float))
-                return (T)(object)BitConverter.ToSingle(data, 0);
-            else if (typeof(T) == typeof(double))
-                return (T)(object)BitConverter.ToDouble(data, 0);
-            else if (typeof(T) == typeof(decimal))
-                return (T)(object)TUtils.ToDecimal(data);
-        }
+        T value;
+        if (ReadProcessMemory(process.Handle, address, &value, sizeof(T), out _))
+            return value;
 
         return default;
     }
@@ -783,11 +743,15 @@ internal class TMemory
         return ReadMemoryBytes(process, (nint)address, size);
     }
 
-    internal static byte[] ReadMemoryBytes(Process process, nint address, int size)
+    internal static unsafe byte[] ReadMemoryBytes(Process process, nint address, int size)
     {
         byte[] data = new byte[size];
-        if (ReadProcessMemory(process.Handle, address, data, data.Length, out _))
-            return data;
+        fixed (byte* pData = data)
+        {
+            if (ReadProcessMemory(process.Handle, address, pData, data.Length, out _))
+                return data;
+        }
+
         return null;
     }
 }

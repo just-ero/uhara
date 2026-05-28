@@ -2,6 +2,7 @@
 using SharpDisasm;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 public partial class Tools
@@ -144,12 +145,14 @@ public partial class Tools
                         byte[] _bytesSize = BitConverter.GetBytes((short)bytes.Length);
 
                         // ---
-                        byte[] all = TArray.Merge(
-                            BitConverter.GetBytes((short)arg1.Length), arg1,
-                            BitConverter.GetBytes((short)arg2.Length), arg2,
-                            BitConverter.GetBytes((short)arg3.Length), arg3,
-                            BitConverter.GetBytes((short)arg4.Length), arg4,
-                            BitConverter.GetBytes((short)arg5.Length), arg5);
+                        byte[] all =
+                        [
+                            .. BitConverter.GetBytes((short)arg1.Length), .. arg1,
+                            .. BitConverter.GetBytes((short)arg2.Length), .. arg2,
+                            .. BitConverter.GetBytes((short)arg3.Length), .. arg3,
+                            .. BitConverter.GetBytes((short)arg4.Length), .. arg4,
+                            .. BitConverter.GetBytes((short)arg5.Length), .. arg5
+                        ];
 
                         Main.ProcessInstance.WriteBytes((nint)(InterfaceArguments + 0x8), all);
                         Main.ProcessInstance.WriteBytes((nint)(InterfaceArguments + 0x2), BitConverter.GetBytes((short)all.Length));
@@ -228,15 +231,15 @@ public partial class Tools
                     List<byte[]> chunks = [];
                     Instruction[] instrs = TInstruction.GetInstructions2(bytes);
 
-                    Dictionary<string, byte[]> jumpPairs = new Dictionary<string, byte[]>
+                    Dictionary<string, byte[]> jumpPairs = new()
                     {
-                        { "jz", new byte[]  { 0x74, 0x02, 0xEB, 0x0E } }, // jump short if equal (je)
-                        { "jnz", new byte[] { 0x75, 0x02, 0xEB, 0x0E } }, // jump short if not equal (jne)
-                        { "jge", new byte[] { 0x7D, 0x02, 0xEB, 0x0E } }, // jump short if not less (greater or equal) (jnl)
-                        { "jle", new byte[] { 0x7E, 0x02, 0xEB, 0x0E } }, // jump short if not less (greater or equal) (jle)
-                        { "jl", new byte[]  { 0x7C, 0x02, 0xEB, 0x0E } }, // jump short if not less (greater or equal) (jl)
-                        { "jg", new byte[]  { 0x7F, 0x02, 0xEB, 0x0E } }, // jump short if not less (greater or equal) (jg)
-                        { "jmp", new byte[] { 0xEB, 0x02, 0xEB, 0x0E } }, // jump short (jmp)
+                        ["jz"] = [0x74, 0x02, 0xEB, 0x0E], // jump short if equal (je)
+                        ["jnz"] = [0x75, 0x02, 0xEB, 0x0E], // jump short if not equal (jne)
+                        ["jge"] = [0x7D, 0x02, 0xEB, 0x0E], // jump short if not less (greater or equal) (jnl)
+                        ["jle"] = [0x7E, 0x02, 0xEB, 0x0E], // jump short if not less (greater or equal) (jle)
+                        ["jl"] = [0x7C, 0x02, 0xEB, 0x0E], // jump short if not less (greater or equal) (jl)
+                        ["jg"] = [0x7F, 0x02, 0xEB, 0x0E], // jump short if not less (greater or equal) (jg)
+                        ["jmp"] = [0xEB, 0x02, 0xEB, 0x0E], // jump short (jmp)
                     };
 
                     byte[] absJump = [ 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
@@ -280,7 +283,7 @@ public partial class Tools
                         offset += instrs[i].Bytes.Length;
                     }
 
-                    return TArray.Merge(chunks.ToArray());
+                    return [.. chunks.SelectMany(self => self)];
                 }
 
                 private byte[] FixCmp(ulong original, byte[] bytes)
@@ -316,7 +319,7 @@ public partial class Tools
                         offset += instrs[i].Bytes.Length;
                     }
 
-                    return TArray.Merge(chunks.ToArray());
+                    return [.. chunks.SelectMany(self => self)];
                 }
 
                 public JitSave()

@@ -1,38 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 internal class TArray
 {
-    internal static byte[] CreateFilled(int size, byte filler)
-    {
-        byte[] arr = new byte[size];
-        for (int i = 0; i < size; i++)
-        {
-            arr[i] = filler;
-        }
-
-        return arr;
-    }
-
-    internal static byte[] CreateFilled(int size, byte[] filler)
-    {
-        byte[] arr = new byte[size];
-
-        int lastIndex = 0;
-
-        for (int i = 0; i < size; i++)
-        {
-            arr[i] = filler[lastIndex];
-
-            lastIndex++;
-            if (lastIndex == filler.Length)
-                lastIndex = 0;
-        }
-
-        return arr;
-    }
-
     internal static byte[] DecodeBlock(byte[] asmBlock)
     {
         List<byte> decoded = [];
@@ -43,77 +13,8 @@ internal class TArray
         return [.. decoded];
     }
 
-    internal static byte[] Extract(byte[] source, int position, int length)
-    {
-        byte[] newCopy = [.. source];
-        newCopy = GutArray(newCopy, 0, position);
-        newCopy = GutArray(newCopy, length, newCopy.Length - length);
-        return newCopy;
-    }
-
-    internal static byte[] GutArray(byte[] original, int position, int length)
-    {
-        byte[] newArray = new byte[original.Length - length];
-
-        Array.Copy(original, 0, newArray, 0, position);
-        Array.Copy(original, position + length, newArray, position, original.Length - position - length);
-
-        return newArray;
-    }
-
-    internal static byte[] StuffArray(byte[] original, int position, int length, byte stuffType)
-    {
-        int newSize = original.Length + length;
-        byte[] newArray = new byte[newSize];
-
-        Array.Copy(original, 0, newArray, 0, position);
-        for (int i = 0; i < length; i++)
-            newArray[position + i] = stuffType;
-        Array.Copy(original, position, newArray, position + length, original.Length - position);
-
-        return newArray;
-    }
-
     internal static void Insert(byte[] destination, byte[] toInsert, int position)
     {
         Array.Copy(toInsert, 0, destination, position, toInsert.Length);
-    }
-
-    public static string[] Merge(List<string[]> arrays)
-    {
-        return Merge(arrays.ToArray());
-    }
-
-    public static string[] Merge(params string[][] arrays)
-    {
-        return [.. arrays.SelectMany(array => array)];
-    }
-
-    internal static byte[] Merge(List<byte[]> arrays)
-    {
-        return Merge(arrays.ToArray());
-    }
-
-    internal static byte[] Merge(params byte[][] arrays)
-    {
-        byte[] byteArray = [];
-        foreach (byte[] array in arrays)
-            byteArray = [.. byteArray, .. array];
-
-        return byteArray;
-    }
-
-    internal static int[] Merge(List<int[]> arrays)
-    {
-        return Merge(arrays.ToArray());
-    }
-
-    internal static int[] Merge(params int[][] arrays)
-    {
-        int[] intArray = [];
-        foreach (int[] array in arrays)
-            intArray = [.. intArray, .. array];
-
-        return intArray;
     }
 }

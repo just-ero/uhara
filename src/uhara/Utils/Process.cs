@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 internal class TProcess
@@ -14,39 +13,10 @@ internal class TProcess
             return GetToken(process1) == GetToken(process2);
     }
 
-    internal static bool Is64Bit(Process process)
-    {
-        nint processHandle = TImports.OpenProcess(0x0400 | 0x0010, false, process.Id);
-
-        if (processHandle != 0)
-        {
-            nint peHeaderAddress = process.MainModule.BaseAddress;
-            byte[] buffer = new byte[4096];
-            TImports.ReadProcessMemory(processHandle, peHeaderAddress, buffer, buffer.Length, out _);
-
-            int peHeaderOffset = BitConverter.ToInt32(buffer, 0x3C);
-            int machineOffset = peHeaderOffset + 4;
-            ushort machine = BitConverter.ToUInt16(buffer, machineOffset);
-
-            TImports.CloseHandle(processHandle);
-            if (machine == 0x014c)
-                return false;
-            else
-                return true;
-        }
-
-        return true;
-    }
-
     internal static int GetImageSize(Process process, ProcessModule module)
     {
         module ??= process.MainModule;
-
-        if (TImports.GetModuleInformation(process.Handle, module.BaseAddress,
-        out TImports.MODULEINFO modInfo, Marshal.SizeOf(typeof(TImports.MODULEINFO))))
-            return modInfo.SizeOfImage;
-
-        return 0;
+        return module.ModuleMemorySize;
     }
 
     internal static int GetImageSize(Process process, string moduleName = null)
@@ -236,13 +206,6 @@ internal class TProcess
     internal static bool WaitForThread(nint threadHandle, int timeout = -1)
     {
         return TImports.WaitForSingleObject(threadHandle, (uint)timeout) == 0;
-    }
-
-    internal static ulong GetTime(Process process)
-    {
-        ulong startTime = (ulong)((DateTimeOffset)process.StartTime).ToUnixTimeMilliseconds();
-        ulong currentTime = (ulong)((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
-        return currentTime - startTime;
     }
 
     internal static bool IsAlive(Process process)

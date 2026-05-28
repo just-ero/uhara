@@ -1,6 +1,7 @@
 {
   "files.exclude": {
     "artifacts/": true,
+    "lib/": true,
   },
   "search.exclude": {
     "lib/": true,

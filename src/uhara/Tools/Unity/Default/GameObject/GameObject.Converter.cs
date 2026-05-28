@@ -1,6 +1,5 @@
 ﻿using LiveSplit.ComponentUtil;
 using SharpDisasm;
-using System;
 
 public partial class Tools
 {

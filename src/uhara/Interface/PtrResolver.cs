@@ -241,8 +241,8 @@ public class PtrResolver
                 List<T> list = [];
                 for (int i = 0; i < size; i += itemSize)
                 {
-                    byte[] extract = TArray.Extract(listBytes, i, itemSize);
-                    list.Add(BytesToType<T>(extract));
+                    var value = MemoryMarshal.Read<T>(listBytes.AsSpan(i, itemSize));
+                    list.Add(value);
                 }
 
                 return [.. list];
@@ -317,8 +317,8 @@ public class PtrResolver
                 List<T> list = [];
                 for (int i = 0; i < size; i += itemSize)
                 {
-                    byte[] extract = TArray.Extract(listBytes, i, itemSize);
-                    list.Add(BytesToType<T>(extract));
+                    var value = MemoryMarshal.Read<T>(listBytes.AsSpan(i, itemSize));
+                    list.Add(value);
                 }
 
                 return list;
@@ -849,42 +849,6 @@ public class PtrResolver
         catch { }
 
         return false;
-    }
-
-    public T BytesToType<T>(byte[] bytes) where T : unmanaged
-    {
-        Type type = typeof(T);
-        if (type == typeof(nint))
-            return (T)(object)BitConverter.ToInt64(bytes, 0);
-        else if (type == typeof(nuint))
-            return (T)(object)BitConverter.ToUInt64(bytes, 0);
-        else if (type == typeof(bool))
-            return (T)(object)BitConverter.ToBoolean(bytes, 0);
-        else if (type == typeof(byte))
-            return (T)(object)bytes[0];
-        else if (type == typeof(sbyte))
-            return (T)(object)(sbyte)bytes[0];
-        else if (type == typeof(char))
-            return (T)(object)BitConverter.ToChar(bytes, 0);
-        else if (type == typeof(short))
-            return (T)(object)BitConverter.ToInt16(bytes, 0);
-        else if (type == typeof(ushort))
-            return (T)(object)BitConverter.ToUInt16(bytes, 0);
-        else if (type == typeof(int))
-            return (T)(object)BitConverter.ToInt32(bytes, 0);
-        else if (type == typeof(uint))
-            return (T)(object)BitConverter.ToUInt32(bytes, 0);
-        else if (type == typeof(long))
-            return (T)(object)BitConverter.ToInt64(bytes, 0);
-        else if (type == typeof(ulong))
-            return (T)(object)BitConverter.ToUInt64(bytes, 0);
-        else if (type == typeof(float))
-            return (T)(object)BitConverter.ToSingle(bytes, 0);
-        else if (type == typeof(double))
-            return (T)(object)BitConverter.ToDouble(bytes, 0);
-        else if (type == typeof(decimal))
-            return (T)(object)TUtils.ToDecimal(bytes, 0);
-        return default;
     }
     #endregion
 }

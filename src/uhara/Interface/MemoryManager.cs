@@ -86,13 +86,15 @@ internal class MemoryManager
                    0xFF, 0xFF, 0xFF, 0xFF, 0xD0, 0x48, 0x83, 0xC4, 0x28, 0xC3
                 ];
 
-                byte[] writeBytes = TArray.Merge(
-                    BitConverter.GetBytes((ulong)delay),
-                    BitConverter.GetBytes(_Sleep),
-                    BitConverter.GetBytes(address),
-                    BitConverter.GetBytes((ulong)size),
-                    BitConverter.GetBytes(_VirtualFree),
-                    bytesExec);
+                byte[] writeBytes =
+                [
+                    .. BitConverter.GetBytes((ulong)delay),
+                    .. BitConverter.GetBytes(_Sleep),
+                    .. BitConverter.GetBytes(address),
+                    .. BitConverter.GetBytes((ulong)size),
+                    .. BitConverter.GetBytes(_VirtualFree),
+                    .. bytesExec
+                ];
 
                 Main.ProcessInstance.WriteBytes((nint)allocated, writeBytes);
                 Main.ProcessInstance.CreateThread((nint)(allocated + 0x28));

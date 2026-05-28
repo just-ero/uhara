@@ -133,10 +133,12 @@ public partial class Tools
                             if (nameData.Length > 3)
                                 break;
 
-                            string[] fullNameData = TArray.Merge(new string[3 - nameData.Length], nameData);
-                            string imageName = fullNameData[0] ?? instanceCreation.DefaultImage;
-                            string namespaceName = fullNameData[1] ?? instanceCreation.DefaultNamespace;
-                            string className = fullNameData[2] ?? instanceCreation.DefaultClass;
+                            Span<string> defaultData = [instanceCreation.DefaultImage, instanceCreation.DefaultNamespace, instanceCreation.DefaultClass];
+                            Span<string> fullNameData = [.. defaultData[..^nameData.Length], .. nameData];
+
+                            string imageName = fullNameData[0];
+                            string namespaceName = fullNameData[1];
+                            string className = fullNameData[2];
 
                             var pathInfo = offsetResolver.GetPath(imageName, namespaceName, className, fieldNames);
                             if (pathInfo == null)

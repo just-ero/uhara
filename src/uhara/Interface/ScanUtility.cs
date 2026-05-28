@@ -27,11 +27,12 @@ internal class ScanUtility
                     {
                         do
                         {
-                            ScanData scanData = new ScanData
+                            ScanData scanData = new()
                             {
                                 Signature = "00 00 00 80 00 00 10",
                                 ReversedSearch = true,
-                                Checkpoints = [
+                                Checkpoints =
+                                [
                                     new("FF FF 48 81 EC , 48 81 EC ?? ?? 00 00", 100),
                                     new("C3 CC , E9 ?? ?? ?? ?? CC , CC CC", 115),
                                 ],
@@ -94,11 +95,10 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "48 83 EC ?? 8B 41 08 48 8B D9 C1 E8 0F A8 01 75",
                             FindStartFunction = true,
-
                             Checkpoints =
                             [
                                 new("83 7C 24 ?? 00", 100),
@@ -110,11 +110,10 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "FF 25 00 00 00 00",
                             FindStartFunction = true,
-
                             Checkpoints =
                             [
                                 new("A8 01 75", 30),
@@ -127,7 +126,7 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "48 83 EC ?? 8B 41 08 48 8D 71 08 C1 E8 0F 33 ED 48 8B F9 A8 01 0F 85",
                             FindStartFunction = true
@@ -138,11 +137,10 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "FF 25 00 00 00 00",
                             FindStartFunction = true,
-
                             Checkpoints =
                             [
                                 new("A8 01 0F 85", 50),
@@ -290,10 +288,9 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "40 55 56 57 41 54 41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
-
                             Checkpoints =
                             [
                                 new("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
@@ -305,10 +302,9 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "40 55 56 57 41 54 41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
-
                             Checkpoints =
                             [
                                 new("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
@@ -320,10 +316,9 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
-
                             Checkpoints =
                             [
                                 new("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
@@ -337,10 +332,9 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
-
                             Checkpoints =
                             [
                                 new("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
@@ -354,10 +348,9 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
-
                             Checkpoints =
                             [
                                 new("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
@@ -369,10 +362,9 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
-
                             Checkpoints =
                             [
                                 new("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
@@ -385,10 +377,9 @@ internal class ScanUtility
                     // ugh, need to make it better one day
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
-
                             Checkpoints =
                             [
                                 new("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
@@ -402,10 +393,9 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
-
                             Checkpoints =
                             [
                                 new("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
@@ -440,11 +430,10 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "48 ?? ?? FF ?? ?? ?? 00 00 F3 0F 59 F0",
                             FindStartFunction = true,
-
                             Checkpoints =
                             [
                                 new("F3 0F 11 3B C6 43 04 01", 0x140),
@@ -456,12 +445,11 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData
+                        ScanData scanData = new()
                         {
                             Signature = "80 BB ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? F6 83",
                             ReversedSearch = true,
                             QueenCheckpointIndex = 1,
-
                             Checkpoints =
                             [
                                 new("?? ?? 48 83 EC ?? 48 8B 41 28 , FF 25 00 00 00 00", 165),
