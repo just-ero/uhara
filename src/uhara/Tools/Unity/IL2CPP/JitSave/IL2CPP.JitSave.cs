@@ -2,6 +2,7 @@
 using SharpDisasm;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -179,7 +180,7 @@ public partial class Tools
                     {
                         TUtils.Print("Waiting for thread to return");
 
-                        if (TProcess.WaitForThread(TProcess.CreateRemoteThread(Main.ProcessInstance, NativeCode + 0x8), 30000))
+                        if (Process.WaitForThread(Main.ProcessInstance.CreateRemoteThread(NativeCode + 0x8), 30000))
                         {
                             int hooked = 0;
                             foreach (QueueItem item in QueueItems)
@@ -220,7 +221,7 @@ public partial class Tools
                                 hooked++;
                             }
 
-                            TUtils.Print(hooked.ToString() + "/" + QueueItems.Count + " functions hooked successfuly");
+                            TUtils.Print($"{hooked}/{QueueItems.Count} functions hooked successfuly");
                         }
                     }
                     catch { }
@@ -270,7 +271,7 @@ public partial class Tools
                                     address += (ulong)(instrs[i].Bytes.Length + value);
 
                                     byte[] together = [.. jump.Value, .. absJump];
-                                    TArray.Insert(together, BitConverter.GetBytes(address), 10);
+                                    Array.Insert(BitConverter.GetBytes(address), together, 10);
 
                                     chunks.Add(together);
                                     offset += together.Length;
@@ -307,7 +308,7 @@ public partial class Tools
                             {
                                 ulong realValue = BitConverter.ToUInt32(instrs[i].Bytes, 2);
                                 ulong readAddress = original + realValue + (ulong)(offset + instrs[i].Bytes.Length);
-                                TArray.Insert(modified, BitConverter.GetBytes(readAddress), 2);
+                                Array.Insert(BitConverter.GetBytes(readAddress), modified, 2);
 
                                 chunks.Add(modified);
                                 offset += modified.Length;
@@ -334,7 +335,7 @@ public partial class Tools
                             GlobalOutput = AllocateStart + Offsets.GlobalOutput;
                             QueueItems.Clear();
 
-                            byte[] asmDecoded = DecodeAsmBlock(AsmBlocks.UnityCPP_JitSave);
+                            byte[] asmDecoded = [.. AsmBlocks.UnityCPP_JitSave.Stride(2)];
                             Main.ProcessInstance.WriteBytes((nint)NativeCode, asmDecoded);
                         }
                     }
@@ -342,16 +343,6 @@ public partial class Tools
                     {
                         TUtils.Print("Creating tool failed");
                     }
-                }
-
-                private byte[] DecodeAsmBlock(byte[] asmBlock)
-                {
-                    List<byte> decoded = [];
-                    for (int i = 0; i < asmBlock.Length; i++)
-                        if (i % 2 == 0)
-                            decoded.Add(asmBlock[i]);
-
-                    return [.. decoded];
                 }
             }
         }

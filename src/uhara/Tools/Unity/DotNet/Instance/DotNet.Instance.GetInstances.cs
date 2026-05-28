@@ -135,8 +135,9 @@ public partial class Tools
                             Loaded = true;
                         }
                         while (false);
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "[FINISHED]");
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            "[FINISHED]");
                     }
 
                     #region ALLOCATE
@@ -149,7 +150,7 @@ public partial class Tools
                             if (AllocateStart == 0)
                                 break;
 
-                            byte[] decoded = TArray.DecodeBlock(AsmCode);
+                            byte[] decoded = [.. AsmCode.Stride(2)];
                             Main.ProcessInstance.WriteBytes((nint)AllocateStart, decoded);
 
                             AddressArguments = AllocateStart + GeneratedOffsets.AddressArguments;
@@ -159,8 +160,9 @@ public partial class Tools
                             result = Result.Success;
                         }
                         while (false);
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion
@@ -175,13 +177,13 @@ public partial class Tools
 
                             // ---
                             {
-                                ulong kernel32Base = TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll");
+                                ulong kernel32Base = (ulong)Main.ProcessInstance.GetModule("kernel32.dll").BaseAddress;
                                 if (kernel32Base == 0)
                                     break;
 
-                                ulong _Sleep = TProcess.GetProcAddress(Main.ProcessInstance, kernel32Base, "Sleep");
-                                ulong _GetModuleHandleA = TProcess.GetProcAddress(Main.ProcessInstance, kernel32Base, "GetModuleHandleA");
-                                ulong _GetProcAddress = TProcess.GetProcAddress(Main.ProcessInstance, kernel32Base, "GetProcAddress");
+                                ulong _Sleep = Main.ProcessInstance.GetProcAddress(kernel32Base, "Sleep");
+                                ulong _GetModuleHandleA = Main.ProcessInstance.GetProcAddress(kernel32Base, "GetModuleHandleA");
+                                ulong _GetProcAddress = Main.ProcessInstance.GetProcAddress(kernel32Base, "GetProcAddress");
                                 if (_Sleep == 0 || _GetModuleHandleA == 0 || _GetProcAddress == 0)
                                     break;
 
@@ -194,7 +196,7 @@ public partial class Tools
                             {
                                 do
                                 {
-                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0)
+                                    if (Main.ProcessInstance.GetModule("UnityPlayer.dll").BaseAddress == IntPtr.Zero)
                                         break;
                                     ulong function = TMemory.ScanSingle(Main.ProcessInstance, "8B ?? ?? 03 00 00 8D ?? FF A9 FA FF FF FF 75 05", "UnityPlayer.dll", 0x20);
                                     if (function == 0)
@@ -231,7 +233,9 @@ public partial class Tools
                                         0x83, 0x01, 0x01, // add dword ptr [rcx], 0x1
                                         0xC3 // ret
                                     ];
-                                    TArray.Insert(update, BitConverter.GetBytes(AllocateStart + GeneratedOffsets.NewSceneLoaded_Current), 2);
+                                    Array.Insert(
+                                        BitConverter.GetBytes(AllocateStart + GeneratedOffsets.NewSceneLoaded_Current),
+                                        update, 2);
 
                                     Main.ProcessInstance.WriteBytes((nint)AddressFreeUse, update);
                                     AddressFreeUse += (ulong)update.Length;
@@ -244,14 +248,15 @@ public partial class Tools
                             // ---
                             {
                                 MemoryManager.AddOverwrite(AllocateStart + GeneratedOffsets.StopThread, BitConverter.GetBytes((ulong)1), ToolUniqueID);
-                                TProcess.CreateRemoteThread(Main.ProcessInstance, AllocateStart + GeneratedOffsets.HK_HookPoint);
+                                Main.ProcessInstance.CreateRemoteThread(AllocateStart + GeneratedOffsets.HK_HookPoint);
                             }
 
                             result = Result.Success;
                         }
                         while (false);
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion

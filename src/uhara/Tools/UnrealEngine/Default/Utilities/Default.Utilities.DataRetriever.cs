@@ -35,7 +35,7 @@ public partial class Tools
                                     address = TMemory.ScanRel(Main.ProcessInstance, 3, "48 8B 0D ???????? 48 85 C9 74 ?? E8");
 
                                 if (address != 0)
-                                    ProcessCache.Set(dataNameLower, "0x" + address.ToString("X"));
+                                    ProcessCache.Set(dataNameLower, $"0x{address:X}");
                             }
 
                             else if (dataNameLower is "gworld" or "world")
@@ -48,7 +48,7 @@ public partial class Tools
                                     address = TMemory.ScanRel(Main.ProcessInstance, 3, "48 8B 05 ???????? 48 3B C? 48 0F 44 C? 48 89 05 ???????? E8");
 
                                 if (address != 0)
-                                    ProcessCache.Set(dataNameLower, "0x" + address.ToString("X"));
+                                    ProcessCache.Set(dataNameLower, $"0x{address:X}");
                             }
 
                             else if (dataNameLower is "fnamepool" or "fnames")
@@ -109,7 +109,7 @@ public partial class Tools
                                 }
 
                                 if (address != 0)
-                                    ProcessCache.Set(dataNameLower, "0x" + address.ToString("X"));
+                                    ProcessCache.Set(dataNameLower, $"0x{address:X}");
                             }
 
                             else if (dataNameLower is "gsync" or "gsyncload" or "gsyncloadcount")
@@ -146,20 +146,22 @@ public partial class Tools
                                 }
 
                                 if (address != 0)
-                                    ProcessCache.Set(dataNameLower, "0x" + address.ToString("X"));
+                                    ProcessCache.Set(dataNameLower, $"0x{address:X}");
                             }
 
                             else
                             {
-                                TUtils.Print(DebugClass + "." + GetType().Name + "." +
-                                MethodBase.GetCurrentMethod().Name + " | " + "Data name not supported: " + dataName);
+                                TUtils.Print(
+                                    $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                    $"Data name not supported: {dataName}");
                                 return 0;
                             }
 
                             // ---
                             if (address == 0)
-                                TUtils.Print(DebugClass + "." + GetType().Name + "." +
-                                    MethodBase.GetCurrentMethod().Name + " | " + "Couldn't find data: " + dataName);
+                                TUtils.Print(
+                                    $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                    $"Couldn't find data: {dataName}");
 
                             return (nint)address;
                         }

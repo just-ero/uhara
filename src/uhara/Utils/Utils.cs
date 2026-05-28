@@ -4,21 +4,6 @@ using System.Text;
 
 internal class TUtils
 {
-    internal static ulong GetTimeDays()
-    {
-        return (ulong)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds() / 86400;
-    }
-
-    internal static ulong GetTimeSeconds()
-    {
-        return (ulong)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds();
-    }
-
-    internal static ulong GetTimeMiliseconds()
-    {
-        return (ulong)((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
-    }
-
     internal static string MultibyteToString(byte[] bytes)
     {
         if (bytes == null || bytes.Length == 0)

@@ -146,8 +146,9 @@ public partial class Tools
 
                             if (nameData.Length > 3)
                             {
-                                TUtils.Print(DebugClass + "." + GetType().Name + "." +
-                                MethodBase.GetCurrentMethod().Name + " | " + "More than 3 types detected: " + fullName);
+                                TUtils.Print(
+                                    $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                    $"More than 3 types detected: {fullName}");
                                 break;
                             }
 
@@ -206,9 +207,9 @@ public partial class Tools
                             {
                                 if (pathInfo.Offsets != null && pathInfo.Offsets.Length < fieldsNames.Length)
                                 {
-                                    TUtils.Print(DebugClass + "." + GetType().Name + "." +
-                                        MethodBase.GetCurrentMethod().Name + " | " + "Path is incorrect, this field might not exist: " +
-                                        fieldsNames[pathInfo.Offsets.Length]);
+                                    TUtils.Print(
+                                        $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                        $"Path is incorrect, this field might not exist: {fieldsNames[pathInfo.Offsets.Length]}");
                                 }
                             }
                             catch { }
@@ -333,8 +334,9 @@ public partial class Tools
                                     break;
 
                                 Loaded = true;
-                                TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                                    " | " + "[FINISHED]");
+                                TUtils.Print(
+                                    $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                    "[FINISHED]");
                             }
                             while (false);
                         }
@@ -353,7 +355,7 @@ public partial class Tools
                                 if (AllocateStart == 0)
                                     break;
 
-                                byte[] decoded = TArray.DecodeBlock(AsmCode);
+                                byte[] decoded = [.. AsmCode.Stride(2)];
                                 Main.ProcessInstance.WriteBytes((nint)AllocateStart, decoded);
 
                                 AddressArguments = AllocateStart + GeneratedOffsets.AddressArguments;
@@ -367,8 +369,9 @@ public partial class Tools
                         }
                         catch { }
 
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion
@@ -388,13 +391,13 @@ public partial class Tools
                                         if (!Main.ReloadProcess())
                                             throw new Exception();
 
-                                        ulong moduleBase = TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll");
+                                        ulong moduleBase = (ulong)Main.ProcessInstance.GetModule("kernel32.dll").BaseAddress;
                                         if (moduleBase == 0)
                                             break;
 
-                                        ulong _Sleep = TProcess.GetProcAddress(Main.ProcessInstance, moduleBase, "Sleep");
-                                        ulong _GetModuleHandleA = TProcess.GetProcAddress(Main.ProcessInstance, moduleBase, "GetModuleHandleA");
-                                        ulong _GetProcAddress = TProcess.GetProcAddress(Main.ProcessInstance, moduleBase, "GetProcAddress");
+                                        ulong _Sleep = Main.ProcessInstance.GetProcAddress(moduleBase, "Sleep");
+                                        ulong _GetModuleHandleA = Main.ProcessInstance.GetProcAddress(moduleBase, "GetModuleHandleA");
+                                        ulong _GetProcAddress = Main.ProcessInstance.GetProcAddress(moduleBase, "GetProcAddress");
 
                                         if (_Sleep == 0 || _GetModuleHandleA == 0 || _GetProcAddress == 0)
                                             break;
@@ -416,8 +419,9 @@ public partial class Tools
                         }
                         catch { }
 
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion
@@ -436,7 +440,7 @@ public partial class Tools
                                         throw new Exception();
 
                                     // ---
-                                    ulong il2cpp_object_new = TProcess.GetProcAddress(Main.ProcessInstance, "GameAssembly.dll", "il2cpp_object_new");
+                                    ulong il2cpp_object_new = Main.ProcessInstance.GetProcAddress("GameAssembly.dll", "il2cpp_object_new");
                                     if (il2cpp_object_new == 0)
                                         break;
 
@@ -466,8 +470,9 @@ public partial class Tools
 
                                     result = Result.Success;
 
-                                    //TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                                    //" | " + "Hook: " + "0x" + hookAddress.ToString("X"));
+                                    TUtils.Print(
+                                        $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                        $"Hook: 0x{hookAddress:X}");
                                 }
                                 while (false);
                                 if (result != Result.None)
@@ -478,8 +483,9 @@ public partial class Tools
                         }
                         catch { }
 
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion

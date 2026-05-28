@@ -12,7 +12,7 @@ internal class TMemory
     {
         do
         {
-            ProcessModule processModule = moduleName == null ? process.MainModule : TProcess.GetModule(process, moduleName);
+            ProcessModule processModule = moduleName == null ? process.MainModule : process.GetModule(moduleName);
             if (processModule == null)
                 break;
 
@@ -101,8 +101,7 @@ internal class TMemory
 
     internal static int GetMemoryProtection(Process process, ulong address, int size = 0x1000)
     {
-        MBI mBi = new MBI();
-        if (!VirtualQueryEx(process.Handle, (nint)address, out mBi, (uint)size))
+        if (!VirtualQueryEx(process.Handle, (nint)address, out MBI mBi, (uint)size))
             return -1;
         return (int)mBi.Protect;
     }
@@ -578,7 +577,7 @@ internal class TMemory
     {
         List<ulong[]> sections = [];
 
-        ProcessModule procModule = TProcess.GetModule(process, moduleName);
+        ProcessModule procModule = process.GetModule(moduleName);
         if (procModule == null)
             return sections;
 

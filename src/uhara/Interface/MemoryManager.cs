@@ -25,17 +25,17 @@ internal class MemoryManager
     {
         try
         {
-            if (!TProcess.IsAlive(Main.ProcessInstance))
+            if (!Main.ProcessInstance.IsAlive)
                 return;
-            string tempToken = TProcess.GetToken(Main.ProcessInstance);
+            string tempToken = Main.ProcessInstance.Token;
             for (int i = 0; i < 100; i++)
                 Thread.Sleep(100); // 10 seconds
-            if (!TProcess.IsAlive(Main.ProcessInstance))
+            if (!Main.ProcessInstance.IsAlive)
                 return;
-            if (tempToken != TProcess.GetToken(Main.ProcessInstance))
+            if (tempToken != Main.ProcessInstance.Token)
                 return;
             TMemory.FreeMemory(Main.ProcessInstance, address, size);
-            //TUtils.Print("Deallocated memory at 0x" + address.ToString("X"));
+            //TUtils.Print($"Deallocated memory at 0x{address:X}");
         }
         catch { }
     }
@@ -66,11 +66,11 @@ internal class MemoryManager
         {
             do
             {
-                ulong _Sleep = TProcess.GetProcAddress(Main.ProcessInstance, "kernel32.dll", "Sleep");
+                ulong _Sleep = Main.ProcessInstance.GetProcAddress("kernel32.dll", "Sleep");
                 if (_Sleep == 0)
                     break;
 
-                ulong _VirtualFree = TProcess.GetProcAddress(Main.ProcessInstance, "kernel32.dll", "VirtualFree");
+                ulong _VirtualFree = Main.ProcessInstance.GetProcAddress("kernel32.dll", "VirtualFree");
                 if (_VirtualFree == 0)
                     break;
 
@@ -108,7 +108,7 @@ internal class MemoryManager
     {
         try
         {
-            string token = TProcess.GetToken(Main.ProcessInstance);
+            string token = Main.ProcessInstance.Token;
             string[] keys = TSaves2.GetKeyNames(RegistryName);
 
             foreach (string key in keys)
@@ -138,7 +138,7 @@ internal class MemoryManager
 
                             TSaves2.DeleteValue(RegistryName, key, Overwrite, valueName);
 
-                            //TUtils.Print(recover.Length + " bytes recovered at 0x" + address.ToString("X"));
+                            //TUtils.Print($"{recover.Length} bytes recovered at 0x{address:X}");
                         }
                     }
 
@@ -159,7 +159,7 @@ internal class MemoryManager
 
                             TSaves2.DeleteValue(RegistryName, key, Allocate, valueName);
                             FreeMemoryDelayed(address, size);
-                            //TUtils.Print("Deallocation scheduled for 0x" + address.ToString("X"));
+                            //TUtils.Print($"Deallocation scheduled for 0x{address:X}");
                         }
                     }
                 }
@@ -175,10 +175,9 @@ internal class MemoryManager
             ulong address = (ulong)Main.ProcessInstance.AllocateMemory(size);
             if (address != 0)
             {
-                string token = TProcess.GetToken(Main.ProcessInstance);
+                string token = Main.ProcessInstance.Token;
                 string tokenPlus = token + Main.UniqueScriptLoadID + uniqueId;
-                TSaves2.Set("0x" + size.ToString("X"), RegistryName, tokenPlus,
-                    Allocate, "0x" + address.ToString("X"));
+                TSaves2.Set($"0x{size:X}", RegistryName, tokenPlus, Allocate, $"0x{address:X}");
 
                 return address;
             }
@@ -197,11 +196,11 @@ internal class MemoryManager
 
             string data = TMemory.GetSignature(recover, true);
 
-            string token = TProcess.GetToken(Main.ProcessInstance);
+            string token = Main.ProcessInstance.Token;
             string tokenPlus = token + Main.UniqueScriptLoadID + uniqueId;
 
-            if (TSaves2.Get(RegistryName, tokenPlus, Overwrite, "0x" + address.ToString("X")) == null)
-                TSaves2.Set(data, RegistryName, tokenPlus, Overwrite, "0x" + address.ToString("X"));
+            if (TSaves2.Get(RegistryName, tokenPlus, Overwrite, $"0x{address:X}") == null)
+                TSaves2.Set(data, RegistryName, tokenPlus, Overwrite, $"0x{address:X}");
         }
         catch { }
     }

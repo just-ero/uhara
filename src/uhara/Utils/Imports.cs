@@ -2,13 +2,6 @@
 
 internal class TImports
 {
-    [DllImport("kernel32.dll")]
-    public static extern bool CloseHandle(nint hObject);
-
-    [DllImport("kernel32.dll")]
-    public static extern nint OpenProcess(uint processAccess, bool bInheritHandle, int processId);
-
-    [StructLayout(LayoutKind.Sequential)]
     public struct MBI
     {
         public nint BaseAddress;

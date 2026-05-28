@@ -65,18 +65,18 @@ public partial class Tools
                                         if (Main.ProcessInstance == null)
                                             break;
 
-                                        if (TProcess.GetModuleBase(Main.ProcessInstance, "mono-2.0-bdwgc.dll") != 0)
+                                        if (Main.ProcessInstance.GetModule("mono-2.0-bdwgc.dll").BaseAddress != IntPtr.Zero)
                                         {
-                                            if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0)
+                                            if (Main.ProcessInstance.GetModule("UnityPlayer.dll").BaseAddress == IntPtr.Zero)
                                                 break;
-                                            byte[] modBytes = TProcess.GetModuleBytes(Main.ProcessInstance, "UnityPlayer.dll");
+                                            byte[] modBytes = Main.ProcessInstance.GetModuleBytes("UnityPlayer.dll");
                                             if (modBytes == null || modBytes.Length == 0)
                                                 break;
                                         }
                                         else
                                             break;
 
-                                        if (TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll") == 0)
+                                        if (Main.ProcessInstance.GetModule("kernel32.dll").BaseAddress == IntPtr.Zero)
                                             break;
                                     }
                                     catch { }

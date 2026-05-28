@@ -190,7 +190,7 @@ public partial class Tools
                     {
                         TUtils.Print("Waiting for thread to return");
 
-                        if (TProcess.WaitForThread(TProcess.CreateRemoteThread(Main.ProcessInstance, NativeCode + 0x8), 30000))
+                        if (ProcessExtensions.WaitForThread(Main.ProcessInstance.CreateRemoteThread(NativeCode + 0x8), 30000))
                         {
                             int hooked = 0;
                             foreach (QueueItem item in QueueItems)
@@ -227,7 +227,7 @@ public partial class Tools
                                 hooked++;
                             }
 
-                            TUtils.Print(hooked + "/" + QueueItems.Count + " functions hooked successfuly");
+                            TUtils.Print($"{hooked}/{QueueItems.Count} functions hooked successfuly");
                         }
                     }
                     catch { }
@@ -248,7 +248,7 @@ public partial class Tools
                             GlobalOutput = AllocateStart + Offsets.GlobalOutput;
                             QueueItems.Clear();
 
-                            byte[] asmDecoded = DecodeAsmBlock(AsmBlocks.UnityCS_JitSave);
+                            byte[] asmDecoded = [.. AsmBlocks.UnityCS_JitSave.Stride(2)];
                             Main.ProcessInstance.WriteBytes((nint)NativeCode, asmDecoded);
                         }
                     }
@@ -256,16 +256,6 @@ public partial class Tools
                     {
                         TUtils.Print("Creating tool failed");
                     }
-                }
-
-                private byte[] DecodeAsmBlock(byte[] asmBlock)
-                {
-                    List<byte> decoded = [];
-                    for (int i = 0; i < asmBlock.Length; i++)
-                        if (i % 2 == 0)
-                            decoded.Add(asmBlock[i]);
-
-                    return [.. decoded];
                 }
             }
         }

@@ -199,7 +199,7 @@ public partial class Tools
                 {
                     if (!Main.ReloadProcess())
                         throw new Exception();
-                    ulong modBase = TProcess.GetModuleBase(Main.ProcessInstance);
+                    ulong modBase = (ulong)Main.ProcessInstance.GetModule("kernel32.dll").BaseAddress;
                     if (modBase == 0)
                         throw new Exception();
 

@@ -4,7 +4,7 @@
     {
         do
         {
-            string token = TProcess.GetToken(Main.ProcessInstance);
+            string token = Main.ProcessInstance.Token;
             if (token == null)
                 break;
 
@@ -18,7 +18,7 @@
     {
         do
         {
-            string token = TProcess.GetToken(Main.ProcessInstance);
+            string token = Main.ProcessInstance.Token;
             if (token == null)
                 break;
 

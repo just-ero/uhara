@@ -81,7 +81,7 @@ public partial class Main
                 }
                 catch { }
 
-                if (TProcess.IsSameProcess(tempProcess, gameInstance))
+                if (tempProcess.Token == gameInstance.Token)
                     bf_ProcessInstance = tempProcess;
             }
             while (false);
@@ -192,7 +192,7 @@ public partial class Main
                 break;
 
             string lastName = ProcessInstance.ProcessName;
-            string lastToken = TProcess.GetToken(ProcessInstance);
+            string lastToken = ProcessInstance.Token;
             if (string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(lastToken))
                 break;
 
@@ -206,7 +206,7 @@ public partial class Main
                 break;
 
             string currentName = ProcessInstance.ProcessName;
-            string currentToken = TProcess.GetToken(ProcessInstance);
+            string currentToken = ProcessInstance.Token;
             if (string.IsNullOrEmpty(currentName) || string.IsNullOrEmpty(currentToken))
                 break;
 
@@ -275,7 +275,7 @@ public partial class Main
 
     internal static void SetProcessCache(string id, string name, string data)
     {
-        string token = TProcess.GetToken(ProcessInstance);
+        string token = ProcessInstance.Token;
         if (string.IsNullOrEmpty(token))
             return;
 
@@ -285,7 +285,7 @@ public partial class Main
 
     internal static string GetProcessCache(string id, string name)
     {
-        string token = TProcess.GetToken(ProcessInstance);
+        string token = ProcessInstance.Token;
         if (string.IsNullOrEmpty(token))
             return null;
 
@@ -332,12 +332,11 @@ public partial class Main
         try
         {
             ReloadProcess();
-            ProcessModule processModule = TProcess.GetModule(ProcessInstance, moduleName);
+            ProcessModule processModule = ProcessInstance.GetModule(moduleName);
             if (processModule == null)
                 return false;
 
-            ulong modBase = TProcess.GetModuleBase(ProcessInstance, moduleName);
-            return modBase != 0;
+            return processModule.BaseAddress != IntPtr.Zero;
         }
         catch { }
 
@@ -419,7 +418,7 @@ public partial class Main
     {
         try
         {
-            return Reject(TProcess.GetModule(ProcessInstance, module), moduleMemorySizes);
+            return Reject(ProcessInstance.GetModule(module), moduleMemorySizes);
         }
         catch { }
 
@@ -448,7 +447,7 @@ public partial class Main
                 return true;
             }
 
-            int exeModuleSize = TProcess.GetImageSize(ProcessInstance, module);
+            int exeModuleSize = module.ModuleMemorySize;
             if (moduleMemorySizes.Any(mms => mms == exeModuleSize))
             {
                 _script.GetType().GetField("_game", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_script, null);
@@ -464,7 +463,7 @@ public partial class Main
     {
         try
         {
-            return TProcess.GetImageSize(ProcessInstance, module);
+            return module.ModuleMemorySize;
         }
         catch { }
 
@@ -475,7 +474,7 @@ public partial class Main
     {
         try
         {
-            return TProcess.GetImageSize(ProcessInstance, moduleName);
+            return ProcessInstance.GetModule(moduleName).ModuleMemorySize;
         }
         catch { }
 
@@ -507,7 +506,7 @@ public partial class Main
             using var file = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             bytes = md5.ComputeHash(file);
 
-            return bytes.Select(x => x.ToString("X2")).Aggregate((a, b) => a + b);
+            return bytes.Select(x => $"{x:X2}").Aggregate((a, b) => a + b);
         }
         catch { }
 
@@ -537,7 +536,7 @@ public partial class Main
                     bytes = md5.ComputeHash(file);
                 }
 
-                return bytes.Select(x => x.ToString("X2")).Aggregate((a, b) => a + b);
+                return bytes.Select(x => $"{x:X2}").Aggregate((a, b) => a + b);
             }
             while (false);
         }
@@ -924,10 +923,10 @@ public partial class Main
     public object CreateTool(string engine, string type, string tool)
     {
         ProcessInstance = null;
-        TProcess.WaitTillSecondsOld(ProcessInstance, 1);
+        ProcessInstance.WaitTillSecondsOld(1);
         if (!ReloadProcess())
             throw new Exception();
-        TProcess.WaitTillSecondsOld(ProcessInstance, 1);
+        ProcessInstance.WaitTillSecondsOld(1);
         if (!ReloadProcess())
             throw new Exception();
 

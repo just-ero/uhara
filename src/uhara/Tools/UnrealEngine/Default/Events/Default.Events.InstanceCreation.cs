@@ -305,8 +305,9 @@ public partial class Tools
                         }
                         catch { }
 
-                        TUtils.Print("Events." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + success);
+                        TUtils.Print(
+                            $"Events.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {success}");
                         return success;
                     }
                     #endregion
@@ -348,8 +349,9 @@ public partial class Tools
                                     if (ToolsShared.ToolData.UnrealEngine.F_UObjectBeginDestroy == 0)
                                     {
                                         if (false)
-                                            TUtils.Print("Events." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                                            " | " + "Couldn't find BeginDeestroy: " + success);
+                                            TUtils.Print(
+                                                $"Events.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                                $"Couldn't find BeginDeestroy: {success}");
                                         break;
                                     }
 
@@ -370,8 +372,9 @@ public partial class Tools
                                     if (ToolsShared.ToolData.UnrealEngine.D_FNamePoolAddress == 0)
                                     {
                                         if (false)
-                                            TUtils.Print("Events." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                                            " | " + "Couldn't find FNamePool: " + success);
+                                            TUtils.Print(
+                                                $"Events.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                                $"Couldn't find FNamePool: {success}");
                                         break;
                                     }
 
@@ -385,8 +388,9 @@ public partial class Tools
                         }
                         catch { }
 
-                        TUtils.Print("Events." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + success);
+                        TUtils.Print(
+                            $"Events.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {success}");
                         return success;
                     }
                     #endregion
@@ -408,8 +412,9 @@ public partial class Tools
                         }
                         catch { }
 
-                        TUtils.Print("Events." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + success);
+                        TUtils.Print(
+                            $"Events.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {success}");
                         return success;
                     }
                     #endregion
@@ -422,7 +427,7 @@ public partial class Tools
                             do
                             {
 
-                                byte[] decoded = TArray.DecodeBlock(AsmCode);
+                                byte[] decoded = [.. AsmCode.Stride(2)];
                                 Main.ProcessInstance.WriteBytes((nint)AddressNativeCode, decoded);
                                 AddressNativeCode += (ulong)decoded.Length;
 
@@ -540,8 +545,9 @@ public partial class Tools
                                         TMemory.CreateAbsoluteCall(Main.ProcessInstance, ourSlot, jumpNative, 0x28);
                                     }
 
-                                    //TUtils.Print("Events." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                                    //" | " + "Hook: " + "0x" + hookAddress.ToString("X"));
+                                    // TUtils.Print(
+                                    //     $"Events.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                    //     $"Hook: 0x{hookAddress:X}");
                                 }
 
                                 {
@@ -605,8 +611,9 @@ public partial class Tools
                                         TMemory.CreateAbsoluteCall(Main.ProcessInstance, ourSlot, jumpNative, 0x28);
                                     }
 
-                                    //TUtils.Print("Events." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                                    //" | " + "Hook: " + "0x" + hookAddress.ToString("X"));
+                                    // TUtils.Print(
+                                    //     $"Events.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                                    //     $"Hook: 0x{hookAddress:X}");
                                 }
 
                                 success = true;
@@ -615,8 +622,9 @@ public partial class Tools
                         }
                         catch { }
 
-                        TUtils.Print("Events." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + success);
+                        TUtils.Print(
+                            $"Events.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {success}");
                         return success;
                     }
                     #endregion

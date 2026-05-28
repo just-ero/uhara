@@ -137,7 +137,7 @@ public partial class Tools
                             {
                                 ulong jumpTo = AddressFreeUse + HK_EndDrawing;
 
-                                byte[] decodedAsm = TArray.DecodeBlock(AsmCode);
+                                byte[] decodedAsm = [.. AsmCode.Stride(2)];
                                 Main.ProcessInstance.WriteBytes((nint)AddressAllocateStart, decodedAsm);
                                 AddressFreeUse += (ulong)decodedAsm.Length;
 

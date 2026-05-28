@@ -125,16 +125,16 @@ public partial class Tools
                         {
                             if (!Main.ReloadProcess())
                                 throw new Exception();
-                            if (TProcess.GetModuleBase(Main.ProcessInstance, "mono-2.0-bdwgc.dll") != 0 ||
-                                TProcess.GetModuleBase(Main.ProcessInstance, "GameAssembly.dll") != 0)
+                            if (Main.ProcessInstance.GetModule("mono-2.0-bdwgc.dll").BaseAddress != IntPtr.Zero ||
+                                Main.ProcessInstance.GetModule("GameAssembly.dll").BaseAddress != IntPtr.Zero)
                             {
-                                if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0)
+                                if (Main.ProcessInstance.GetModule("UnityPlayer.dll").BaseAddress == IntPtr.Zero)
                                     break;
-                                byte[] modBytes = TProcess.GetModuleBytes(Main.ProcessInstance, "UnityPlayer.dll");
+                                byte[] modBytes = Main.ProcessInstance.GetModuleBytes("UnityPlayer.dll");
                                 if (modBytes == null || modBytes.Length == 0)
                                     break;
                             }
-                            else if (TProcess.GetModuleBase(Main.ProcessInstance, "mono.dll") == 0)
+                            else if (Main.ProcessInstance.GetModule("mono.dll").BaseAddress == IntPtr.Zero)
                                 break;
                             else
                                 LegacyVersion = true;

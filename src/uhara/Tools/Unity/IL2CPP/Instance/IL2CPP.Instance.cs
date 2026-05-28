@@ -111,7 +111,7 @@ public partial class Tools
 
                             string[] strs = new string[offs.Length];
                             for (int i = 0; i < offs.Length; i++)
-                                strs[i] = "0x" + offs[i].ToString("X");
+                                strs[i] = $"0x{offs[i]:X}";
 
                             return strs;
                         }
@@ -215,14 +215,14 @@ public partial class Tools
                                     throw new Exception();
                                 try
                                 {
-                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "GameAssembly.dll") == 0)
+                                    if (Main.ProcessInstance.GetModule("GameAssembly.dll").BaseAddress == IntPtr.Zero)
                                         break;
-                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0)
+                                    if (Main.ProcessInstance.GetModule("UnityPlayer.dll").BaseAddress == IntPtr.Zero)
                                         break;
-                                    byte[] modBytes = TProcess.GetModuleBytes(Main.ProcessInstance, "UnityPlayer.dll");
+                                    byte[] modBytes = Main.ProcessInstance.GetModuleBytes("UnityPlayer.dll");
                                     if (modBytes == null || modBytes.Length == 0)
                                         break;
-                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll") == 0)
+                                    if (Main.ProcessInstance.GetModule("kernel32.dll").BaseAddress == IntPtr.Zero)
                                         break;
                                 }
                                 catch

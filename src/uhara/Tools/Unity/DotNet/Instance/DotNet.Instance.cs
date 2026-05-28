@@ -112,7 +112,7 @@ public partial class Tools
 
                             string[] strs = new string[offs.Length];
                             for (int i = 0; i < offs.Length; i++)
-                                strs[i] = "0x" + offs[i].ToString("X");
+                                strs[i] = $"0x{offs[i]:X}";
 
                             return strs;
                         }
@@ -225,18 +225,18 @@ public partial class Tools
                                     if (Main.ProcessInstance == null)
                                         break;
 
-                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "mono-2.0-bdwgc.dll") != 0)
+                                    if (Main.ProcessInstance.GetModule("mono-2.0-bdwgc.dll").BaseAddress != IntPtr.Zero)
                                     {
-                                        if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0)
+                                        if (Main.ProcessInstance.GetModule("UnityPlayer.dll").BaseAddress == IntPtr.Zero)
                                             break;
-                                        byte[] modBytes = TProcess.GetModuleBytes(Main.ProcessInstance, "UnityPlayer.dll");
+                                        byte[] modBytes = Main.ProcessInstance.GetModuleBytes("UnityPlayer.dll");
                                         if (modBytes == null || modBytes.Length == 0)
                                             break;
                                     }
-                                    else if (TProcess.GetModuleBase(Main.ProcessInstance, "mono.dll") == 0)
+                                    else if (Main.ProcessInstance.GetModule("mono.dll").BaseAddress == IntPtr.Zero)
                                         break;
 
-                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll") == 0)
+                                    if (Main.ProcessInstance.GetModule("kernel32.dll").BaseAddress == IntPtr.Zero)
                                         break;
                                 }
                                 catch { }

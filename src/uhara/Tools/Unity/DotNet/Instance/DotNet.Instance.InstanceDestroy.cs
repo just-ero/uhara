@@ -80,8 +80,9 @@ public partial class Tools
                             Loaded = true;
                         }
                         while (false);
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                                " | " + "[FINISHED]");
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"[FINISHED]");
                     }
 
                     #region SCAN_DATA
@@ -93,7 +94,7 @@ public partial class Tools
                             if (!Main.ReloadProcess())
                                 throw new Exception();
 
-                            ulong mono_gc_wbarrier_set_field = TProcess.GetProcAddress(Main.ProcessInstance, "mono-2.0-bdwgc.dll", "mono_gc_wbarrier_set_field");
+                            ulong mono_gc_wbarrier_set_field = Main.ProcessInstance.GetProcAddress("mono-2.0-bdwgc.dll", "mono_gc_wbarrier_set_field");
                             if (mono_gc_wbarrier_set_field == 0)
                                 break;
 
@@ -218,8 +219,9 @@ public partial class Tools
                         }
                         while (false);
 
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion
@@ -233,7 +235,7 @@ public partial class Tools
                             if (AllocateStart == 0)
                                 break;
 
-                            byte[] decoded = TArray.DecodeBlock(AsmCode);
+                            byte[] decoded = [.. AsmCode.Stride(2)];
                             Main.ProcessInstance.WriteBytes((nint)AllocateStart, decoded);
 
                             AddressArguments = AllocateStart + GeneratedOffsets.AddressArguments;
@@ -243,8 +245,9 @@ public partial class Tools
                             result = Result.Success;
                         }
                         while (false);
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion
@@ -254,13 +257,19 @@ public partial class Tools
                         Result result = Result.None;
                         do
                         {
-                            Main.ProcessInstance.WriteBytes((nint)(AllocateStart + GeneratedOffsets.ReturnAddress), BitConverter.GetBytes(CallFinalSetField + 0x6));
-                            Main.ProcessInstance.WriteBytes((nint)(AllocateStart + GeneratedOffsets.mono_gc_wbarrier_set_field), BitConverter.GetBytes(TProcess.GetProcAddress(Main.ProcessInstance, "mono-2.0-bdwgc.dll", "mono_gc_wbarrier_set_field")));
+                            Main.ProcessInstance.WriteBytes(
+                                (nint)(AllocateStart + GeneratedOffsets.ReturnAddress),
+                                BitConverter.GetBytes(CallFinalSetField + 0x6));
+                            Main.ProcessInstance.WriteBytes(
+                                (nint)(AllocateStart + GeneratedOffsets.mono_gc_wbarrier_set_field),
+                                BitConverter.GetBytes(
+                                    Main.ProcessInstance.GetProcAddress("mono-2.0-bdwgc.dll", "mono_gc_wbarrier_set_field")));
                             result = Result.Success;
                         }
                         while (false);
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion
@@ -279,14 +288,16 @@ public partial class Tools
                             MemoryManager.AddOverwrite(setFieldPtr, saveBytes, ToolUniqueID);
                             Main.ProcessInstance.WriteBytes((nint)setFieldPtr, BitConverter.GetBytes(AllocateStart + GeneratedOffsets.HK_HookPoint));
 
-                            //TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            //" | " + "Hook: " + "0x" + CallFinalSetField.ToString("X"));
+                            // TUtils.Print(
+                            //     $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            //     $"Hook: 0x{CallFinalSetField:X}");
 
                             result = Result.Success;
                         }
                         while (false);
-                        TUtils.Print(DebugClass + "." + GetType().Name + "." + MethodBase.GetCurrentMethod().Name +
-                            " | " + "Result: " + result);
+                        TUtils.Print(
+                            $"{DebugClass}.{GetType().Name}.{MethodBase.GetCurrentMethod().Name} | " +
+                            $"Result: {result}");
                         return result;
                     }
                     #endregion
