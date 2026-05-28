@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 internal class TSignature
 {
@@ -22,7 +19,7 @@ internal class TSignature
             Signature = signature;
             Relative = isRelative;
             ToRelativeInstructionOffset = toRelativeInstructionOffset;
-            Checkpoints = checkpoints == null ? new List<KeyValuePair<string, int>>() : checkpoints;
+            Checkpoints = checkpoints ?? [];
             QueenCheckpointIndex = queenCheckpointIndex;
             ReversedSearch = reversed;
             Offset = offset;
@@ -45,13 +42,18 @@ internal class TSignature
         {
             string byteValue = signature.Substring(i * 2, 2);
 
-            if (byteValue == "??") byteArray[i] = 0x00;
-            else if (byteValue[0] == '?') byteArray[i] = Convert.ToByte("0" + byteValue[1], 16);
-            else if (byteValue[1] == '?') byteArray[i] = Convert.ToByte(byteValue[0] + "0", 16);
+            if (byteValue == "??")
+                byteArray[i] = 0x00;
+            else if (byteValue[0] == '?')
+                byteArray[i] = Convert.ToByte("0" + byteValue[1], 16);
+            else if (byteValue[1] == '?')
+                byteArray[i] = Convert.ToByte(byteValue[0] + "0", 16);
             else
             {
-                if (!Uri.IsHexDigit(byteValue[0]) || !Uri.IsHexDigit(byteValue[1])) return null;
-                else byteArray[i] = Convert.ToByte(byteValue, 16);
+                if (!Uri.IsHexDigit(byteValue[0]) || !Uri.IsHexDigit(byteValue[1]))
+                    return null;
+                else
+                    byteArray[i] = Convert.ToByte(byteValue, 16);
             }
         }
 
@@ -71,10 +73,14 @@ internal class TSignature
                     mask += "!";
                     i += 1;
                 }
-                else if (signature[i] == '?' && signature[i+1] == '?') mask += "?";
-                else if (signature[i] == '?') mask += "<";
-                else if (signature[i+1] == '?') mask += ">";
-                else mask += "x";
+                else if (signature[i] == '?' && signature[i + 1] == '?')
+                    mask += "?";
+                else if (signature[i] == '?')
+                    mask += "<";
+                else if (signature[i + 1] == '?')
+                    mask += ">";
+                else
+                    mask += "x";
             }
         }
 

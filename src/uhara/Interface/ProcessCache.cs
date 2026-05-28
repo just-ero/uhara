@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-internal class ProcessCache
+﻿internal class ProcessCache
 {
     internal static void Set(string name, string value)
     {
         do
         {
             string token = TProcess.GetToken(Main.ProcessInstance);
-            if (token == null) break;
+            if (token == null)
+                break;
 
             TSaves2.Set(token + "," + value,
                 "ProcessCache", name);
@@ -24,13 +19,16 @@ internal class ProcessCache
         do
         {
             string token = TProcess.GetToken(Main.ProcessInstance);
-            if (token == null) break;
+            if (token == null)
+                break;
 
             string getRaw = TSaves2.Get("ProcessCache", name);
-            if (string.IsNullOrEmpty(getRaw)) break;
+            if (string.IsNullOrEmpty(getRaw))
+                break;
 
             string[] data = getRaw.Split(',');
-            if (data.Length < 2) break;
+            if (data.Length < 2)
+                break;
 
             if (data[0] == token)
                 return data[1];

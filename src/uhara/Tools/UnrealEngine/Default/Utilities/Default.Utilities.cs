@@ -1,43 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 public partial class Tools
 {
-	public partial class UnrealEngine
-	{
-		public partial class Default
-		{
-			public partial class Utilities
-			{
-				internal static string DebugClass = "Utilities";
-				internal static string ToolUniqueID = "UCyEljVfhjUoJhDU";
+    public partial class UnrealEngine
+    {
+        public partial class Default
+        {
+            public partial class Utilities
+            {
+                internal static string DebugClass = "Utilities";
+                internal static string ToolUniqueID = "UCyEljVfhjUoJhDU";
 
-				private DataRetriever dataRetriever;
-				private TextReader textReader;
-				private FpsLocker fpsLocker;
+                private readonly DataRetriever dataRetriever;
+                private readonly TextReader textReader;
+                private readonly FpsLocker fpsLocker;
 
                 #region PUBLIC_API
-				public void ExpandScanUtilitySignatures(string name, string signature)
-				{
-					try
-					{
-						if (ScanUtility.ExpandSignatures.ContainsKey(name)) ScanUtility.ExpandSignatures[name].Add(signature);
-						else ScanUtility.ExpandSignatures[name] = new List<string> { signature };
+                public void ExpandScanUtilitySignatures(string name, string signature)
+                {
+                    try
+                    {
+                        if (ScanUtility.ExpandSignatures.ContainsKey(name))
+                            ScanUtility.ExpandSignatures[name].Add(signature);
+                        else
+                            ScanUtility.ExpandSignatures[name] = [signature];
                     }
-					catch { }
+                    catch { }
                 }
 
-				public void SetFpsLimit(double fps)
-				{
-					try
-					{
-						fpsLocker.SetFpsLimit(fps);
-					}
-					catch { }
-				}
+                public void SetFpsLimit(double fps)
+                {
+                    try
+                    {
+                        fpsLocker.SetFpsLimit(fps);
+                    }
+                    catch { }
+                }
 
                 public string FNameToStringLegacy(object fName)
                 {
@@ -46,6 +44,7 @@ public partial class Tools
                         return textReader.FNameToStringLegacy(fName);
                     }
                     catch { }
+
                     return null;
                 }
 
@@ -56,6 +55,7 @@ public partial class Tools
                         return textReader.FNameToShortStringLegacy(fName);
                     }
                     catch { }
+
                     return null;
                 }
 
@@ -66,18 +66,20 @@ public partial class Tools
                         return textReader.FNameToShortStringLegacy2(fName);
                     }
                     catch { }
+
                     return null;
                 }
 
                 public string FNameToString(object fName)
-				{
-					try
-					{
-						return textReader.FNameToString(fName);
-					}
-					catch { }
-					return null;
-				}
+                {
+                    try
+                    {
+                        return textReader.FNameToString(fName);
+                    }
+                    catch { }
+
+                    return null;
+                }
 
                 public string FNameToShortString(object fName)
                 {
@@ -86,6 +88,7 @@ public partial class Tools
                         return textReader.FNameToShortString(fName);
                     }
                     catch { }
+
                     return null;
                 }
 
@@ -96,114 +99,119 @@ public partial class Tools
                         return textReader.FNameToShortString2(fName);
                     }
                     catch { }
+
                     return null;
                 }
 
-                IntPtr _GEngine = IntPtr.Zero;
-				public IntPtr GEngine
-				{
-					get
-					{
-						if (_GEngine != IntPtr.Zero) return _GEngine;
-						else
-						{
-							_GEngine = dataRetriever.FindData("GEngine");
-							return _GEngine;
-						}
-					}
-
-					set { _GEngine = value; }
-				}
-
-				IntPtr _GWorld = IntPtr.Zero;
-				public IntPtr GWorld
-				{
-					get
-					{
-						if (_GWorld != IntPtr.Zero) return _GWorld;
-						else
-						{
-							_GWorld = dataRetriever.FindData("GWorld");
-							return _GWorld;
-						}
-					}
-
-					set { _GWorld = value; }
-				}
-
-                IntPtr _FNamePool = IntPtr.Zero;
-                public IntPtr FNamePool
+                public nint GEngine
                 {
                     get
                     {
-                        if (_FNamePool != IntPtr.Zero) return _FNamePool;
+                        if (field != 0)
+                            return field;
                         else
                         {
-                            _FNamePool = dataRetriever.FindData("FNames");
-                            return _FNamePool;
+                            field = dataRetriever.FindData("GEngine");
+                            return field;
                         }
                     }
 
-                    set { _FNamePool = value; }
+                    set;
+                } = 0;
+
+                public nint GWorld
+                {
+                    get
+                    {
+                        if (field != 0)
+                            return field;
+                        else
+                        {
+                            field = dataRetriever.FindData("GWorld");
+                            return field;
+                        }
+                    }
+
+                    set;
+                } = 0;
+
+                public nint FNamePool
+                {
+                    get
+                    {
+                        if (field != 0)
+                            return field;
+                        else
+                        {
+                            field = dataRetriever.FindData("FNames");
+                            return field;
+                        }
+                    }
+
+                    set;
+                } = 0;
+
+                public nint FNames
+                {
+                    get
+                    {
+                        if (field != 0)
+                            return field;
+                        else
+                        {
+                            field = dataRetriever.FindData("FNames");
+                            return field;
+                        }
+                    }
+
+                    set;
+                } = 0;
+
+                public nint GSync
+                {
+                    get
+                    {
+                        if (field != 0)
+                            return field;
+                        else
+                        {
+                            field = dataRetriever.FindData("GSync");
+                            return field;
+                        }
+                    }
+
+                    set;
+                } = 0;
+
+                public nint FindData(string dataName)
+                {
+                    try
+                    {
+                        return dataRetriever.FindData(dataName);
+                    }
+                    catch { }
+
+                    return 0;
                 }
-                IntPtr _FNames = IntPtr.Zero;
-				public IntPtr FNames
-				{
-					get
-					{
-						if (_FNames != IntPtr.Zero) return _FNames;
-						else
-						{
-							_FNames = dataRetriever.FindData("FNames");
-							return _FNames;
-						}
-					}
+                #endregion
 
-                    set { _FNames = value; }
-                }
+                public Utilities()
+                {
+                    if (!Main.ReloadProcess())
+                        throw new Exception();
+                    ulong modBase = TProcess.GetModuleBase(Main.ProcessInstance);
+                    if (modBase == 0)
+                        throw new Exception();
 
-				IntPtr _GSync = IntPtr.Zero;
-				public IntPtr GSync
-				{
-					get
-					{
-						if (_GSync != IntPtr.Zero) return _GSync;
-						else
-						{
-							_GSync = dataRetriever.FindData("GSync");
-							return _GSync;
-						}
-					}
+                    // ---
+                    MemoryManager.ClearMemory(ToolUniqueID);
 
-                    set { _GSync = value; }
-                }
-
-				public IntPtr FindData(string dataName)
-				{
-					try
-					{
-						return dataRetriever.FindData(dataName);
-					}
-					catch { }
-					return IntPtr.Zero;
-				}
-				#endregion
-
-				public Utilities()
-				{
-					if (!Main.ReloadProcess()) throw new Exception();
-					ulong modBase = TProcess.GetModuleBase(Main.ProcessInstance);
-					if (modBase == 0) throw new Exception();
-
-					// ---
-					MemoryManager.ClearMemory(ToolUniqueID);
-
-					// ---
+                    // ---
                     dataRetriever = new DataRetriever();
                     textReader = new TextReader();
                     fpsLocker = new FpsLocker();
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 }

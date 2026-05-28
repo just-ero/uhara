@@ -1,26 +1,18 @@
 ﻿using SharpDisasm;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 public partial class Tools
 {
-	public partial class UnrealEngine
-	{
-		public partial class Default
-		{
-			public partial class Utilities
-			{
-				public class TextReader
-				{
-					bool Loaded = false;
-					ulong FNamePool = 0;
+    public partial class UnrealEngine
+    {
+        public partial class Default
+        {
+            public partial class Utilities
+            {
+                public class TextReader
+                {
+                    private readonly bool Loaded = false;
+                    private readonly ulong FNamePool = 0;
 
                     internal string FNameToStringLegacy(object fName)
                     {
@@ -28,14 +20,15 @@ public partial class Tools
                         {
                             do
                             {
-                                if (!Loaded) break;
+                                if (!Loaded)
+                                    break;
 
                                 uint fNameNum = Convert.ToUInt32(fName);
 
-								uint AEWJCWUH = fNameNum;
+                                uint AEWJCWUH = fNameNum;
                                 uint JNJXDZWC = fNameNum;
 
-                                AEWJCWUH = AEWJCWUH & 0x3FFF;
+                                AEWJCWUH &= 0x3FFF;
                                 JNJXDZWC = (uint)((int)JNJXDZWC >> 14);
 
                                 ulong VHMNULIN = AEWJCWUH;
@@ -45,18 +38,20 @@ public partial class Tools
                                 YISGISGE = TMemory.ReadMemory<ulong>(Main.ProcessInstance, BSQEHBVH + (YISGISGE * 8));
                                 ulong RYJWMIBA = TMemory.ReadMemory<ulong>(Main.ProcessInstance, YISGISGE + (VHMNULIN * 8));
 
-                                YISGISGE = YISGISGE | ulong.MaxValue;
+                                YISGISGE |= ulong.MaxValue;
                                 YISGISGE += 1;
 
-                                ulong ORCFMRAE = RYJWMIBA + (YISGISGE + 0x10);
-								byte[] OHGMSZBF = TMemory.ReadMemoryBytes(Main.ProcessInstance, ORCFMRAE, 128);
+                                ulong ORCFMRAE = RYJWMIBA + YISGISGE + 0x10;
+                                byte[] OHGMSZBF = TMemory.ReadMemoryBytes(Main.ProcessInstance, ORCFMRAE, 128);
 
-								string BONYDQDT = TUtils.MultibyteToString(OHGMSZBF);
-								if (!string.IsNullOrEmpty(BONYDQDT)) return BONYDQDT;
+                                string BONYDQDT = TUtils.MultibyteToString(OHGMSZBF);
+                                if (!string.IsNullOrEmpty(BONYDQDT))
+                                    return BONYDQDT;
                             }
                             while (false);
                         }
                         catch { }
+
                         return null;
                     }
 
@@ -66,19 +61,22 @@ public partial class Tools
                         {
                             do
                             {
-                                if (!Loaded) break;
+                                if (!Loaded)
+                                    break;
 
                                 string name = FNameToStringLegacy(fName);
-                                if (string.IsNullOrEmpty(name)) break;
+                                if (string.IsNullOrEmpty(name))
+                                    break;
 
                                 int dot = name.LastIndexOf('.');
                                 int slash = name.LastIndexOf('/');
 
-                                return name.Substring(Math.Max(dot, slash) + 1);
+                                return name[(Math.Max(dot, slash) + 1)..];
                             }
                             while (false);
                         }
                         catch { }
+
                         return null;
                     }
 
@@ -88,105 +86,120 @@ public partial class Tools
                         {
                             do
                             {
-                                if (!Loaded) break;
+                                if (!Loaded)
+                                    break;
 
                                 string name = FNameToStringLegacy(fName);
-                                if (string.IsNullOrEmpty(name)) break;
+                                if (string.IsNullOrEmpty(name))
+                                    break;
 
                                 int under = name.LastIndexOf('_');
-                                return name.Substring(0, under + 1);
+                                return name[..(under + 1)];
                             }
                             while (false);
                         }
                         catch { }
+
                         return null;
                     }
 
                     internal string FNameToString(object fName)
-					{
-						try
-						{
-							do
-							{
-                                if (!Loaded) break;
+                    {
+                        try
+                        {
+                            do
+                            {
+                                if (!Loaded)
+                                    break;
 
                                 uint fNameNum = Convert.ToUInt32(fName);
 
                                 var nameIdx = (fNameNum & 0x000000000000FFFF) >> 0x00;
-								var chunkIdx = (fNameNum & 0x00000000FFFF0000) >> 0x10;
-								var number = (fNameNum & 0xFFFFFFFF00000000) >> 0x20;
+                                var chunkIdx = (fNameNum & 0x00000000FFFF0000) >> 0x10;
+                                var number = (fNameNum & 0xFFFFFFFF00000000) >> 0x20;
 
-								IntPtr chunk = (IntPtr)TMemory.ReadMemory<ulong>(Main.ProcessInstance,
-									FNamePool + (ulong)(0x10 + (int)chunkIdx * 0x8));
+                                nint chunk = (nint)TMemory.ReadMemory<ulong>(Main.ProcessInstance,
+                                    FNamePool + (ulong)(0x10 + ((int)chunkIdx * 0x8)));
 
-                                if (chunk == IntPtr.Zero) break;
+                                if (chunk == 0)
+                                    break;
 
-								IntPtr entry = chunk + (int)nameIdx * sizeof(short);
-                                if (entry == IntPtr.Zero) break;
+                                nint entry = chunk + ((int)nameIdx * sizeof(short));
+                                if (entry == 0)
+                                    break;
 
                                 int length = TMemory.ReadMemory<short>(Main.ProcessInstance, entry) >> 6;
-								if (length > byte.MaxValue || length <= 0) break;
+                                if (length is > byte.MaxValue or <= 0)
+                                    break;
 
                                 byte[] textBytes = TMemory.ReadMemoryBytes(Main.ProcessInstance, entry + sizeof(short), length);
-                                if (textBytes == null) break;
+                                if (textBytes == null)
+                                    break;
 
                                 string toReturn = TUtils.MultibyteToString(textBytes);
-								return number == 0 ? toReturn : toReturn + "_" + number;
-							}
-							while (false);
-						}
-						catch { }
-						return null;
-					}
+                                return number == 0 ? toReturn : toReturn + "_" + number;
+                            }
+                            while (false);
+                        }
+                        catch { }
 
-					internal string FNameToShortString(object fName)
-					{
-						try
-						{
-							do
-							{
-                                if (!Loaded) break;
+                        return null;
+                    }
+
+                    internal string FNameToShortString(object fName)
+                    {
+                        try
+                        {
+                            do
+                            {
+                                if (!Loaded)
+                                    break;
 
                                 string name = FNameToString(fName);
-								if (string.IsNullOrEmpty(name)) break;
+                                if (string.IsNullOrEmpty(name))
+                                    break;
 
-								int dot = name.LastIndexOf('.');
-								int slash = name.LastIndexOf('/');
+                                int dot = name.LastIndexOf('.');
+                                int slash = name.LastIndexOf('/');
 
-								return name.Substring(Math.Max(dot, slash) + 1);
-							}
-							while (false);
-						}
-						catch { }
-						return null;
-					}
+                                return name[(Math.Max(dot, slash) + 1)..];
+                            }
+                            while (false);
+                        }
+                        catch { }
 
-					internal string FNameToShortString2(object fName)
-					{
-						try
-						{
-							do
-							{
-								if (!Loaded) break;
+                        return null;
+                    }
 
-								string name = FNameToString(fName);
-								if (string.IsNullOrEmpty(name)) break;
+                    internal string FNameToShortString2(object fName)
+                    {
+                        try
+                        {
+                            do
+                            {
+                                if (!Loaded)
+                                    break;
 
-								int under = name.LastIndexOf('_');
-								return name.Substring(0, under + 1);
-							}
-							while (false);
-						}
-						catch { }
-						return null;
-					}
+                                string name = FNameToString(fName);
+                                if (string.IsNullOrEmpty(name))
+                                    break;
 
-					public TextReader()
-					{
-						try
-						{
-							do
-							{
+                                int under = name.LastIndexOf('_');
+                                return name[..(under + 1)];
+                            }
+                            while (false);
+                        }
+                        catch { }
+
+                        return null;
+                    }
+
+                    public TextReader()
+                    {
+                        try
+                        {
+                            do
+                            {
                                 if (FNamePool == 0)
                                 {
                                     try
@@ -210,25 +223,31 @@ public partial class Tools
                                     do
                                     {
                                         ulong result = TMemory.ScanSingle(Main.ProcessInstance, "E8 ???????? 4C 8B C8 41 8B ?? 99 81 E2 FF 3F 00 00");
-                                        if (result == 0) break;
+                                        if (result == 0)
+                                            break;
 
                                         {
                                             int value = TMemory.ReadMemory<int>(Main.ProcessInstance, result + 1);
                                             result = (ulong)((long)result + value + 5);
 
                                             byte[] bytes = TMemory.ReadMemoryBytes(Main.ProcessInstance, result, 50);
-                                            if (bytes == null) break;
+                                            if (bytes == null)
+                                                break;
 
                                             Instruction[] instrs = TInstruction.GetInstructions2(bytes, result);
-                                            if (instrs == null || instrs.Length < 2) break;
+                                            if (instrs == null || instrs.Length < 2)
+                                                break;
 
-                                            if (instrs[1].Length != 7) break;
-                                            if (!instrs[1].ToString().Contains("rax, [")) break;
+                                            if (instrs[1].Length != 7)
+                                                break;
+                                            if (!instrs[1].ToString().Contains("rax, ["))
+                                                break;
 
                                             result = instrs[1].Offset;
 
                                             value = TMemory.ReadMemory<int>(Main.ProcessInstance, result + 3);
-                                            if (value == 0) break;
+                                            if (value == 0)
+                                                break;
 
                                             FNamePool = (ulong)((long)result + value + 7);
                                         }
@@ -238,13 +257,13 @@ public partial class Tools
 
                                 // ---
                                 Loaded = true;
-							}
-							while (false);
-						}
-						catch { }
-					}
-				}
-			}
-		}
-	}
+                            }
+                            while (false);
+                        }
+                        catch { }
+                    }
+                }
+            }
+        }
+    }
 }

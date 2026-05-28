@@ -1,28 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 internal class TProcess
 {
     internal static bool IsSameProcess(Process process1, Process process2)
     {
-        if (process1 == null || process2 == null) return false;
-        else return GetToken(process1) == GetToken(process2);
+        if (process1 == null || process2 == null)
+            return false;
+        else
+            return GetToken(process1) == GetToken(process2);
     }
 
     internal static bool Is64Bit(Process process)
     {
-        IntPtr processHandle = TImports.OpenProcess(0x0400 | 0x0010, false, process.Id);
+        nint processHandle = TImports.OpenProcess(0x0400 | 0x0010, false, process.Id);
 
-        if (processHandle != IntPtr.Zero)
+        if (processHandle != 0)
         {
-            IntPtr peHeaderAddress = process.MainModule.BaseAddress;
+            nint peHeaderAddress = process.MainModule.BaseAddress;
             byte[] buffer = new byte[4096];
             TImports.ReadProcessMemory(processHandle, peHeaderAddress, buffer, buffer.Length, out _);
 
@@ -31,19 +29,21 @@ internal class TProcess
             ushort machine = BitConverter.ToUInt16(buffer, machineOffset);
 
             TImports.CloseHandle(processHandle);
-            if (machine == 0x014c) return false;
-            else return true;
+            if (machine == 0x014c)
+                return false;
+            else
+                return true;
         }
+
         return true;
     }
 
     internal static int GetImageSize(Process process, ProcessModule module)
     {
-        if (module == null) module = process.MainModule;
+        module ??= process.MainModule;
 
-        TImports.MODULEINFO modInfo;
         if (TImports.GetModuleInformation(process.Handle, module.BaseAddress,
-        out modInfo, Marshal.SizeOf(typeof(TImports.MODULEINFO))))
+        out TImports.MODULEINFO modInfo, Marshal.SizeOf(typeof(TImports.MODULEINFO))))
             return modInfo.SizeOfImage;
 
         return 0;
@@ -62,20 +62,24 @@ internal class TProcess
 
         if (processStartTime != 0)
         {
-            long waitTime = (long)((processStartTime + (ulong)(seconds * 1000) - currentTime));
-            if (waitTime > 0) Thread.Sleep((int)waitTime);
+            long waitTime = (long)(processStartTime + (ulong)(seconds * 1000) - currentTime);
+            if (waitTime > 0)
+                Thread.Sleep((int)waitTime);
             return true;
         }
+
         return false;
     }
 
     internal static ulong GetModuleEnd(Process process, string name = null)
     {
-        if (name == null) return (ulong)process.MainModule.BaseAddress + (ulong)process.MainModule.ModuleMemorySize;
+        if (name == null)
+            return (ulong)process.MainModule.BaseAddress + (ulong)process.MainModule.ModuleMemorySize;
         else
         {
             ProcessModule module = GetModule(process, name);
-            if (module == null) return 0;
+            if (module == null)
+                return 0;
 
             return (ulong)module.BaseAddress + (ulong)module.ModuleMemorySize;
         }
@@ -85,8 +89,12 @@ internal class TProcess
     {
         do
         {
-            ulong start = GetModuleBase(process, name); if (start == 0) break;
-            ulong size = GetModuleSize(process, name); if (size == 0) break;
+            ulong start = GetModuleBase(process, name);
+            if (start == 0)
+                break;
+            ulong size = GetModuleSize(process, name);
+            if (size == 0)
+                break;
 
             return TMemory.ReadMemoryBytes(process, start, (int)size);
         }
@@ -96,7 +104,8 @@ internal class TProcess
 
     public static ulong GetModuleSize(Process process, string name = null)
     {
-        if (name == null) return (ulong)process.MainModule.ModuleMemorySize;
+        if (name == null)
+            return (ulong)process.MainModule.ModuleMemorySize;
         return (ulong)GetModule(process, name).ModuleMemorySize;
     }
 
@@ -116,6 +125,7 @@ internal class TProcess
                 }
             }
         }
+
         return 0;
     }
 
@@ -124,10 +134,12 @@ internal class TProcess
         do
         {
             ProcessModule module = GetModule(process, moduleName);
-            if (module == null) break;
+            if (module == null)
+                break;
 
             ulong moduleBase = (ulong)module.BaseAddress;
-            if (moduleBase == 0) break;
+            if (moduleBase == 0)
+                break;
 
             return GetProcAddress(process, moduleBase, functionName);
         }
@@ -174,7 +186,8 @@ internal class TProcess
 
     internal static ProcessModule GetModule(Process process, string name = null)
     {
-        if (process == null) return null;
+        if (process == null)
+            return null;
 
         if (name == null)
         {
@@ -190,6 +203,7 @@ internal class TProcess
                 }
             }
         }
+
         return null;
     }
 
@@ -208,17 +222,18 @@ internal class TProcess
         return (ulong)((DateTimeOffset)process.StartTime).ToUnixTimeMilliseconds();
     }
 
-    internal static IntPtr CreateRemoteThread(Process process, ulong entryPointAddress, int waitForThread = 0)
+    internal static nint CreateRemoteThread(Process process, ulong entryPointAddress, int waitForThread = 0)
     {
-        IntPtr remoteThread = TImports.CreateRemoteThread(process.Handle, IntPtr.Zero, 0,
-                    (IntPtr)entryPointAddress, IntPtr.Zero, 0, out _);
+        nint remoteThread = TImports.CreateRemoteThread(process.Handle, 0, 0,
+                    (nint)entryPointAddress, 0, 0, out _);
 
-        if (waitForThread != 0) WaitForThread(remoteThread, waitForThread);
+        if (waitForThread != 0)
+            WaitForThread(remoteThread, waitForThread);
 
         return remoteThread;
     }
 
-    internal static bool WaitForThread(IntPtr threadHandle, int timeout = -1)
+    internal static bool WaitForThread(nint threadHandle, int timeout = -1)
     {
         return TImports.WaitForSingleObject(threadHandle, (uint)timeout) == 0;
     }
@@ -240,6 +255,7 @@ internal class TProcess
             process.MainModule != null;
         }
         catch { }
+
         return false;
     }
 }

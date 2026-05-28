@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 internal class TInstruction
 {
@@ -12,20 +9,22 @@ internal class TInstruction
     {
         do
         {
-            List<Instruction> instrs = new List<Instruction>();
+            List<Instruction> instrs = [];
 
             ulong behind = address - (ulong)numBytes;
             byte[] bytes = TMemory.ReadMemoryBytes(process, behind, numBytes);
-            if (bytes == null) break;
+            if (bytes == null)
+                break;
 
-            instrs = GetInstructions2(bytes, behind).ToList();
-            if (instrs == null) break;
+            instrs = [.. GetInstructions2(bytes, behind)];
+            if (instrs == null)
+                break;
 
             instrs.Reverse();
-            return instrs.ToArray();
+            return [.. instrs];
         }
         while (false);
-        return new List<Instruction>().ToArray();
+        return [];
     }
 
     internal static ulong GetAlignedAddress(Process process, ulong address)
@@ -58,39 +57,40 @@ internal class TInstruction
     {
         if (instruction.Contains("rip") && instruction.Contains("]"))
         {
-            string converted = instruction.Substring(instruction.IndexOf("rip") + 4);
-            converted = converted.Remove(converted.IndexOf("]"));
+            string converted = instruction[(instruction.IndexOf("rip") + 4)..];
+            converted = converted[..converted.IndexOf("]")];
             return TConvert.Parse<long>(converted);
         }
+
         return 0;
     }
 
     internal static Instruction GetInstruction2(Process process, ulong address)
     {
         byte[] bytes = TMemory.ReadMemoryBytes(process, address, 50);
-        Instruction[] instructions = new Disassembler(bytes, ArchitectureMode.x86_64,
-        address, true).Disassemble().ToArray();
+        Instruction[] instructions = [.. new Disassembler(bytes, ArchitectureMode.x86_64,
+        address, true).Disassemble()];
 
         return instructions[0];
     }
 
     internal static Instruction GetInstruction2(byte[] bytes, ulong address)
     {
-        Instruction[] instructions = new Disassembler(bytes, ArchitectureMode.x86_64,
-        address, true).Disassemble().ToArray();
+        Instruction[] instructions = [.. new Disassembler(bytes, ArchitectureMode.x86_64,
+        address, true).Disassemble()];
 
         return instructions[0];
     }
 
     internal static Instruction[] GetInstructions2(byte[] bytes, ulong address = 0)
     {
-        return new Disassembler(bytes, ArchitectureMode.x86_64,
-        address, true).Disassemble().ToArray();
+        return [.. new Disassembler(bytes, ArchitectureMode.x86_64,
+        address, true).Disassemble()];
     }
 
     internal static int GetMinimumOverwrite(Process process, ulong address, int required = 5)
     {
-        byte[] bytes = TMemory.ReadMemoryBytes(process, (IntPtr)address, 50);
+        byte[] bytes = TMemory.ReadMemoryBytes(process, (nint)address, 50);
         return GetMinimumOverwrite(bytes, required);
     }
 
@@ -102,13 +102,14 @@ internal class TInstruction
     internal static int GetMinimumOverwrite(byte[] bytes, int required = 5)
     {
         int length = 0;
-        Instruction[] instructions = new Disassembler(bytes, ArchitectureMode.x86_64, 0,
-            true).Disassemble().ToArray();
+        Instruction[] instructions = [.. new Disassembler(bytes, ArchitectureMode.x86_64, 0,
+            true).Disassemble()];
 
         foreach (Instruction instruction in instructions)
         {
             length += instruction.Length;
-            if (length >= required) return length;
+            if (length >= required)
+                return length;
         }
 
         return 0;

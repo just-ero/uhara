@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-internal class ToolsShared
+﻿internal class ToolsShared
 {
     internal class ToolData
     {
@@ -21,75 +15,75 @@ internal class ToolsShared
     {
         internal class Unity
         {
-            internal static readonly string[] Data = new string[] { "unity", "unityengine", "unity3d" };
+            internal static readonly string[] Data = ["unity", "unityengine", "unity3d"];
 
             internal class Default
             {
-                internal static readonly string[] Data = new string[] { "default" };
+                internal static readonly string[] Data = ["default"];
 
                 internal class GameObject
                 {
-                    internal static readonly string[] Data = new string[] { "gameobject" };
+                    internal static readonly string[] Data = ["gameobject"];
                 }
             }
 
             internal class Utils
             {
-                internal static readonly string[] Data = new string[] { "utils", "utilities" };
+                internal static readonly string[] Data = ["utils", "utilities"];
             }
 
             internal class DotNet
             {
-                internal static readonly string[] Data = new string[] { "dotnet", "cs", "csharp", "mono" };
+                internal static readonly string[] Data = ["dotnet", "cs", "csharp", "mono"];
 
                 internal class JitSave
                 {
-                    internal static readonly string[] Data = new string[] { "jitsave" };
+                    internal static readonly string[] Data = ["jitsave"];
                 }
 
                 internal class Instance
                 {
-                    internal static readonly string[] Data = new string[] { "instance" };
+                    internal static readonly string[] Data = ["instance"];
                 }
             }
 
             internal class Il2Cpp
             {
-                internal static readonly string[] Data = new string[] { "il2cpp", "cpp" };
+                internal static readonly string[] Data = ["il2cpp", "cpp"];
 
                 internal class JitSave
                 {
-                    internal static readonly string[] Data = new string[] { "jitsave" };
+                    internal static readonly string[] Data = ["jitsave"];
                 }
 
                 internal class Instance
                 {
-                    internal static readonly string[] Data = new string[] { "instance" };
+                    internal static readonly string[] Data = ["instance"];
                 }
             }
         }
 
         internal class UnrealEngine
         {
-            internal static readonly string[] Data = new string[] { "unrealengine" };
+            internal static readonly string[] Data = ["unrealengine"];
 
             internal class Default
             {
-                internal static readonly string[] Data = new string[] { "default" };
+                internal static readonly string[] Data = ["default"];
 
                 internal class Events
                 {
-                    internal static readonly string[] Data = new string[] { "events" };
+                    internal static readonly string[] Data = ["events"];
                 }
 
                 internal class Utilities
                 {
-                    internal static readonly string[] Data = new string[] { "utils", "utilities" };
+                    internal static readonly string[] Data = ["utils", "utilities"];
                 }
 
                 internal class CutsceneManager
                 {
-                    internal static readonly string[] Data = new string[] { "cutscenemanager" };
+                    internal static readonly string[] Data = ["cutscenemanager"];
                 }
             }
         }

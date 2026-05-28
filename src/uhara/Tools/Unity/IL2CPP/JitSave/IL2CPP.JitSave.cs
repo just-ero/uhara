@@ -2,14 +2,7 @@
 using SharpDisasm;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 public partial class Tools
 {
@@ -19,10 +12,10 @@ public partial class Tools
         {
             public class JitSave
             {
-                private ulong AllocSize = 0x10000;
+                private readonly ulong AllocSize = 0x10000;
 
-                private byte[] AsmAdd1RelativeStorage = new byte[] { 0x48, 0x83, 0x05, 0xF0, 0xFF, 0xFF, 0xFF, 0x01 }; // add [rip-8], 1
-                private byte[] AsmMovRcxRelativeStorage = new byte[] { 0x48, 0x89, 0x0D, 0xF1, 0xFF, 0xFF, 0xFF, 0x90 }; // mov [rip-8], rcx
+                private readonly byte[] AsmAdd1RelativeStorage = [0x48, 0x83, 0x05, 0xF0, 0xFF, 0xFF, 0xFF, 0x01]; // add [rip-8], 1
+                private readonly byte[] AsmMovRcxRelativeStorage = [0x48, 0x89, 0x0D, 0xF1, 0xFF, 0xFF, 0xFF, 0x90]; // mov [rip-8], rcx
 
                 public class Offsets
                 {
@@ -42,7 +35,7 @@ public partial class Tools
                     public ulong HookAddress = 0;
                     public short HookOffset = 0;
                     public short OverwriteSize = 0;
-                    public byte[] Bytes = new byte[0];
+                    public byte[] Bytes = [];
 
                     public QueueItem(ulong address, short hookOffset, short overwriteSize, byte[] bytes)
                     {
@@ -53,12 +46,12 @@ public partial class Tools
                     }
                 }
 
-                List<QueueItem> QueueItems = new List<QueueItem>();
+                private readonly List<QueueItem> QueueItems = [];
 
-                ulong AllocateStart = 0;
-                ulong NativeCode = 0;
-                ulong InterfaceArguments = 0;
-                ulong GlobalOutput = 0;
+                private readonly ulong AllocateStart = 0;
+                private readonly ulong NativeCode = 0;
+                private ulong InterfaceArguments = 0;
+                private ulong GlobalOutput = 0;
 
                 private string DefAssembly = "Assembly-CSharp.dll";
                 private string DefNamespace = "";
@@ -69,75 +62,76 @@ public partial class Tools
                     DefNamespace = _namespace;
                 }
 
-                public IntPtr AddFlag(string _class)
+                public nint AddFlag(string _class)
                 {
                     return Add(DefAssembly, DefNamespace, _class, "Start", 0, 0, 0, AsmAdd1RelativeStorage);
                 }
 
-                public IntPtr AddFlag(string _class, string _method)
+                public nint AddFlag(string _class, string _method)
                 {
                     return Add(DefAssembly, DefNamespace, _class, _method, -1, 0, 0, AsmAdd1RelativeStorage);
                 }
 
-                public IntPtr AddFlag(string _class, string _method, short overwriteSize)
+                public nint AddFlag(string _class, string _method, short overwriteSize)
                 {
                     return Add(DefAssembly, DefNamespace, _class, _method, -1, 0, overwriteSize,
                         AsmAdd1RelativeStorage);
                 }
 
-                public IntPtr AddFlag(string _class, string _method, short paramCount, short hookOffset, short overwriteSize)
+                public nint AddFlag(string _class, string _method, short paramCount, short hookOffset, short overwriteSize)
                 {
                     return Add(DefAssembly, DefNamespace, _class, _method, paramCount, hookOffset,
                         overwriteSize, AsmAdd1RelativeStorage);
                 }
 
-                public IntPtr AddInst(string _class)
+                public nint AddInst(string _class)
                 {
                     return Add(DefAssembly, DefNamespace, _class, "Update", 0, 0, 0, AsmMovRcxRelativeStorage);
                 }
 
-                public IntPtr AddInst(string _class, short overwriteSize)
+                public nint AddInst(string _class, short overwriteSize)
                 {
                     return Add(DefAssembly, DefNamespace, _class, "Update", 0, 0, overwriteSize,
                         AsmMovRcxRelativeStorage);
                 }
 
-                public IntPtr AddInst(string _class, string _method)
+                public nint AddInst(string _class, string _method)
                 {
                     return Add(DefAssembly, DefNamespace, _class, _method, -1, 0, 0,
                         AsmMovRcxRelativeStorage);
                 }
 
-                public IntPtr AddInst(string _class, string _method, short overwriteSize)
+                public nint AddInst(string _class, string _method, short overwriteSize)
                 {
                     return Add(DefAssembly, DefNamespace, _class, _method, -1, 0, overwriteSize,
                         AsmMovRcxRelativeStorage);
                 }
 
-                public IntPtr AddInst(string _class, string _method, short paramCount, short hookOffset, short overwriteSize)
+                public nint AddInst(string _class, string _method, short paramCount, short hookOffset, short overwriteSize)
                 {
                     return Add(DefAssembly, DefNamespace, _class, _method, paramCount, hookOffset, overwriteSize,
                         AsmMovRcxRelativeStorage);
                 }
 
-                public IntPtr AddInst(string _namespace, string _class, string _method, short overwriteSize)
+                public nint AddInst(string _namespace, string _class, string _method, short overwriteSize)
                 {
                     return Add(DefAssembly, _namespace, _class, _method, -1, 0, overwriteSize,
                         AsmMovRcxRelativeStorage);
                 }
 
-                public IntPtr Add(string _class, string _method, short paramCount, short hookOffset, short overwriteSize, byte[] bytes)
+                public nint Add(string _class, string _method, short paramCount, short hookOffset, short overwriteSize, byte[] bytes)
                 {
                     return Add(DefAssembly, DefNamespace, _class, _method, paramCount, hookOffset, overwriteSize, bytes);
                 }
 
-                public IntPtr Add(string _assembly, string _namespace, string _class, string _method, short paramCount,
+                public nint Add(string _assembly, string _namespace, string _class, string _method, short paramCount,
                 short hookOffset, short overwriteSize, byte[] bytes)
                 {
                     try
                     {
                         // ---
-                        if (!_assembly.EndsWith(".dll")) _assembly += ".dll";
+                        if (!_assembly.EndsWith(".dll"))
+                            _assembly += ".dll";
 
                         byte[] arg1 = TUtils.StringToMultibyte(_assembly);
                         byte[] arg2 = TUtils.StringToMultibyte(_namespace);
@@ -157,17 +151,18 @@ public partial class Tools
                             BitConverter.GetBytes((short)arg4.Length), arg4,
                             BitConverter.GetBytes((short)arg5.Length), arg5);
 
-                        Main.ProcessInstance.WriteBytes((IntPtr)(InterfaceArguments + 0x8), all);
-                        Main.ProcessInstance.WriteBytes((IntPtr)(InterfaceArguments + 0x2), BitConverter.GetBytes((short)all.Length));
+                        Main.ProcessInstance.WriteBytes((nint)(InterfaceArguments + 0x8), all);
+                        Main.ProcessInstance.WriteBytes((nint)(InterfaceArguments + 0x2), BitConverter.GetBytes((short)all.Length));
 
                         QueueItems.Add(new QueueItem(GlobalOutput + 0x8 + 0x2, hookOffset, overwriteSize, bytes));
                         InterfaceArguments += 0x8 + (ulong)all.Length;
                         GlobalOutput += 0x100;
 
-                        return (IntPtr)(GlobalOutput - 0x100 + 0x2);
+                        return (nint)(GlobalOutput - 0x100 + 0x2);
                     }
                     catch { }
-                    return IntPtr.Zero;
+
+                    return 0;
                 }
 
                 public void ProcessQueue()
@@ -187,27 +182,30 @@ public partial class Tools
                             foreach (QueueItem item in QueueItems)
                             {
                                 ulong funcAddress = TMemory.ReadMemory<ulong>(Main.ProcessInstance, item.HookAddress);
-                                if (funcAddress == 0) continue;
+                                if (funcAddress == 0)
+                                    continue;
 
                                 funcAddress += (ulong)item.HookOffset;
 
-                                Main.ProcessInstance.WriteBytes((IntPtr)item.HookAddress, BitConverter.GetBytes((ulong)0));
+                                Main.ProcessInstance.WriteBytes((nint)item.HookAddress, BitConverter.GetBytes((ulong)0));
 
                                 int minimumOverwrite = item.OverwriteSize;
-                                if (minimumOverwrite == 0) minimumOverwrite =
+                                if (minimumOverwrite == 0)
+                                    minimumOverwrite =
                                         TInstruction.GetMinimumOverwrite(Main.ProcessInstance, funcAddress, 14);
 
                                 byte[] realCode = TMemory.ReadMemoryBytes(Main.ProcessInstance, funcAddress, minimumOverwrite);
-                                if (realCode == null) continue;
-                                byte[] toRecover = realCode.ToList().ToArray();
+                                if (realCode == null)
+                                    continue;
+                                byte[] toRecover = [.. realCode];
 
                                 realCode = FixCmp(funcAddress, realCode);
                                 realCode = FixJump(funcAddress, realCode);
 
-                                Main.ProcessInstance.WriteBytes((IntPtr)item.HookAddress, item.Bytes);
+                                Main.ProcessInstance.WriteBytes((nint)item.HookAddress, item.Bytes);
                                 ulong nextAddress = item.HookAddress + (ulong)item.Bytes.Length;
 
-                                Main.ProcessInstance.WriteBytes((IntPtr)nextAddress, realCode);
+                                Main.ProcessInstance.WriteBytes((nint)nextAddress, realCode);
                                 nextAddress += (ulong)realCode.Length;
 
                                 TMemory.CreateAbsoluteJump(Main.ProcessInstance, nextAddress, funcAddress + (ulong)minimumOverwrite);
@@ -227,7 +225,7 @@ public partial class Tools
 
                 private byte[] FixJump(ulong original, byte[] bytes)
                 {
-                    List<byte[]> chunks = new List<byte[]>();
+                    List<byte[]> chunks = [];
                     Instruction[] instrs = TInstruction.GetInstructions2(bytes);
 
                     Dictionary<string, byte[]> jumpPairs = new Dictionary<string, byte[]>
@@ -241,8 +239,8 @@ public partial class Tools
                         { "jmp", new byte[] { 0xEB, 0x02, 0xEB, 0x0E } }, // jump short (jmp)
                     };
 
-                    byte[] absJump = new byte[] { 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-                    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+                    byte[] absJump = [ 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
+                    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ];
 
                     int offset = 0;
                     for (int i = 0; i < instrs.Length; i++)
@@ -259,13 +257,16 @@ public partial class Tools
                                     ulong address = original + (ulong)offset;
                                     int value = 0;
 
-                                    if (insLen == 2) value = instrs[i].Bytes[1];
-                                    else if (insLen == 5) value = BitConverter.ToInt32(instrs[i].Bytes, 1);
-                                    else break;
+                                    if (insLen == 2)
+                                        value = instrs[i].Bytes[1];
+                                    else if (insLen == 5)
+                                        value = BitConverter.ToInt32(instrs[i].Bytes, 1);
+                                    else
+                                        break;
 
                                     address += (ulong)(instrs[i].Bytes.Length + value);
 
-                                    byte[] together = jump.Value.Concat(absJump).ToArray();
+                                    byte[] together = [.. jump.Value, .. absJump];
                                     TArray.Insert(together, BitConverter.GetBytes(address), 10);
 
                                     chunks.Add(together);
@@ -284,14 +285,14 @@ public partial class Tools
 
                 private byte[] FixCmp(ulong original, byte[] bytes)
                 {
-                    List<byte[]> chunks = new List<byte[]>();
+                    List<byte[]> chunks = [];
                     Instruction[] instrs = TInstruction.GetInstructions2(bytes);
                     int requiredInstructionLength = 7; // cmp byte [rip+n], 0
 
                     // mov rax, address
                     // cmp byte ptr [rax], 0
-                    byte[] modified = new byte[] { 0x48, 0xB8, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                        0xFF, 0xFF, 0xFF, 0x80, 0x38, 0x00, 0x90 };
+                    byte[] modified = [ 0x48, 0xB8, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                        0xFF, 0xFF, 0xFF, 0x80, 0x38, 0x00, 0x90 ];
 
                     int offset = 0;
                     for (int i = 0; i < instrs.Length; i++)
@@ -331,19 +332,23 @@ public partial class Tools
                             QueueItems.Clear();
 
                             byte[] asmDecoded = DecodeAsmBlock(AsmBlocks.UnityCPP_JitSave);
-                            Main.ProcessInstance.WriteBytes((IntPtr)NativeCode, asmDecoded);
+                            Main.ProcessInstance.WriteBytes((nint)NativeCode, asmDecoded);
                         }
                     }
-                    catch { TUtils.Print("Creating tool failed"); }
+                    catch
+                    {
+                        TUtils.Print("Creating tool failed");
+                    }
                 }
 
                 private byte[] DecodeAsmBlock(byte[] asmBlock)
                 {
-                    List<byte> decoded = new List<byte>();
+                    List<byte> decoded = [];
                     for (int i = 0; i < asmBlock.Length; i++)
-                        if (i % 2 == 0) decoded.Add(asmBlock[i]);
+                        if (i % 2 == 0)
+                            decoded.Add(asmBlock[i]);
 
-                    return decoded.ToArray();
+                    return [.. decoded];
                 }
             }
         }

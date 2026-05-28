@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 public partial class Tools
 {
@@ -14,7 +9,7 @@ public partial class Tools
             public partial class GameObject
             {
                 #region PUBLIC_API
-                public Converter.GameObjectResolvable InstanceToGameObjectResolvable(IntPtr instanceAddress, bool isInsideAPointer)
+                public Converter.GameObjectResolvable InstanceToGameObjectResolvable(nint instanceAddress, bool isInsideAPointer)
                 {
                     return converter.InstanceToGameObjectResolvable((ulong)instanceAddress, isInsideAPointer);
                 }
@@ -24,7 +19,7 @@ public partial class Tools
                     return converter.InstanceToGameObjectResolvable(instanceAddress, isInsideAPointer);
                 }
 
-                public Converter.GameObjectResolvable GameObjectToGameObjectResolvable(IntPtr instanceAddress, bool isInsideAPointer)
+                public Converter.GameObjectResolvable GameObjectToGameObjectResolvable(nint instanceAddress, bool isInsideAPointer)
                 {
                     return converter.GameObjectToGameObjectResolvable((ulong)instanceAddress, isInsideAPointer);
                 }
@@ -49,7 +44,8 @@ public partial class Tools
                         {
                             while (true)
                             {
-                                if (!Main.ReloadProcess()) throw new Exception();
+                                if (!Main.ReloadProcess())
+                                    throw new Exception();
 
                                 if (Main.ProcessInstance.MainWindowHandle != IntPtr.Zero)
                                     break;
@@ -62,37 +58,52 @@ public partial class Tools
                             {
                                 do
                                 {
-                                    if (!Main.ReloadProcess()) throw new Exception();
+                                    if (!Main.ReloadProcess())
+                                        throw new Exception();
                                     try
                                     {
-                                        if (Main.ProcessInstance == null) break;
+                                        if (Main.ProcessInstance == null)
+                                            break;
 
                                         if (TProcess.GetModuleBase(Main.ProcessInstance, "mono-2.0-bdwgc.dll") != 0)
                                         {
-                                            if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0) break;
+                                            if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0)
+                                                break;
                                             byte[] modBytes = TProcess.GetModuleBytes(Main.ProcessInstance, "UnityPlayer.dll");
-                                            if (modBytes == null || modBytes.Length == 0) break;
+                                            if (modBytes == null || modBytes.Length == 0)
+                                                break;
                                         }
-                                        else break;
+                                        else
+                                            break;
 
-                                        if (TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll") == 0) break;
+                                        if (TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll") == 0)
+                                            break;
                                     }
                                     catch { }
+
                                     success = true;
                                 }
                                 while (false);
-                                if (!success) throw new Exception();
+                                if (!success)
+                                    throw new Exception();
                             }
                         }
-                        catch { return; }
+                        catch
+                        {
+                            return;
+                        }
 
                         MemoryManager.ClearMemory(ToolUniqueID);
                     }
-                    catch { return; }
+                    catch
+                    {
+                        return;
+                    }
 
                     // ---
                     converter = new Converter();
-                    if (!converter.Initiate()) throw new Exception();
+                    if (!converter.Initiate())
+                        throw new Exception();
                 }
                 #endregion
             }

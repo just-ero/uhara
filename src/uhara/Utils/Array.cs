@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-class TArray
+internal class TArray
 {
     internal static byte[] CreateFilled(int size, byte filler)
     {
@@ -13,6 +11,7 @@ class TArray
         {
             arr[i] = filler;
         }
+
         return arr;
     }
 
@@ -36,16 +35,17 @@ class TArray
 
     internal static byte[] DecodeBlock(byte[] asmBlock)
     {
-        List<byte> decoded = new List<byte>();
+        List<byte> decoded = [];
         for (int i = 0; i < asmBlock.Length; i++)
-            if (i % 2 == 0) decoded.Add(asmBlock[i]);
+            if (i % 2 == 0)
+                decoded.Add(asmBlock[i]);
 
-        return decoded.ToArray();
+        return [.. decoded];
     }
 
     internal static byte[] Extract(byte[] source, int position, int length)
     {
-        byte[] newCopy = source.ToList().ToArray();
+        byte[] newCopy = [.. source];
         newCopy = GutArray(newCopy, 0, position);
         newCopy = GutArray(newCopy, length, newCopy.Length - length);
         return newCopy;
@@ -67,7 +67,8 @@ class TArray
         byte[] newArray = new byte[newSize];
 
         Array.Copy(original, 0, newArray, 0, position);
-        for (int i = 0; i < length; i++) newArray[position + i] = stuffType;
+        for (int i = 0; i < length; i++)
+            newArray[position + i] = stuffType;
         Array.Copy(original, position, newArray, position + length, original.Length - position);
 
         return newArray;
@@ -85,7 +86,7 @@ class TArray
 
     public static string[] Merge(params string[][] arrays)
     {
-        return arrays.SelectMany(array => array).ToArray();
+        return [.. arrays.SelectMany(array => array)];
     }
 
     internal static byte[] Merge(List<byte[]> arrays)
@@ -95,9 +96,9 @@ class TArray
 
     internal static byte[] Merge(params byte[][] arrays)
     {
-        byte[] byteArray = new byte[0];
+        byte[] byteArray = [];
         foreach (byte[] array in arrays)
-            byteArray = byteArray.Concat(array).ToArray();
+            byteArray = [.. byteArray, .. array];
 
         return byteArray;
     }
@@ -109,9 +110,9 @@ class TArray
 
     internal static int[] Merge(params int[][] arrays)
     {
-        int[] intArray = new int[0];
+        int[] intArray = [];
         foreach (int[] array in arrays)
-            intArray = intArray.Concat(array).ToArray();
+            intArray = [.. intArray, .. array];
 
         return intArray;
     }

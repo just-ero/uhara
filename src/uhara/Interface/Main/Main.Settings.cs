@@ -1,18 +1,11 @@
-﻿using LiveSplit.ASL;
-using LiveSplit.Options;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
 
 public partial class Main
 {
-	public class ScriptSettings
-	{
+    public class ScriptSettings
+    {
         public void Create(Dictionary<string, string> settings, bool defaultValue = true, string defaultParent = null, params int[] order)
         {
             try
@@ -39,13 +32,15 @@ public partial class Main
             {
                 do
                 {
-                    if (!File.Exists(path)) break;
+                    if (!File.Exists(path))
+                        break;
 
                     XmlDocument xmlDoc = new XmlDocument();
                     xmlDoc.Load(path);
 
                     XmlNodeList nodes = xmlDoc.SelectNodes("//Setting");
-                    if (nodes == null) break;
+                    if (nodes == null)
+                        break;
 
                     foreach (XmlNode node in nodes)
                     {
@@ -90,13 +85,13 @@ public partial class Main
                 int rows = settings.GetLength(0);
                 int cols = settings.GetLength(1);
 
-                if (cols < 1 || cols > 5)
+                if (cols is < 1 or > 5)
                 {
                     TUtils.Print("Settings could not be parsed");
                     return;
                 }
 
-                int[] _order = new int[] { 1, 2, 3, 4, 5 };
+                int[] _order = [1, 2, 3, 4, 5];
                 if (order.Length != 0)
                 {
                     if (order.Length != cols)
@@ -152,7 +147,7 @@ public partial class Main
         }
 
         public void Create(dynamic[,] settings, params int[] order)
-		{
+        {
             try
             {
                 bool defaultValue = true;
@@ -161,13 +156,13 @@ public partial class Main
                 int rows = settings.GetLength(0);
                 int cols = settings.GetLength(1);
 
-                if (cols < 1 || cols > 5)
+                if (cols is < 1 or > 5)
                 {
                     TUtils.Print("Settings could not be parsed");
                     return;
                 }
 
-                int[] _order = new int[] { 1, 2, 3, 4, 5 };
+                int[] _order = [1, 2, 3, 4, 5];
                 if (order.Length != 0)
                 {
                     if (order.Length != cols)
@@ -221,5 +216,5 @@ public partial class Main
             }
             catch { }
         }
-	}
+    }
 }

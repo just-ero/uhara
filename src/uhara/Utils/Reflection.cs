@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 
 internal class UReflection
 {
@@ -16,10 +11,15 @@ internal class UReflection
                 start = start.GetType().GetField(name, BindingFlags.NonPublic |
                     BindingFlags.Instance).GetValue(start);
 
-                if (start == null) return null;
+                if (start == null)
+                    return null;
             }
         }
-        catch { return null; }
+        catch
+        {
+            return null;
+        }
+
         return start;
     }
 }

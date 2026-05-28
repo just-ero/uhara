@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-class TUtils
+internal class TUtils
 {
     internal static decimal ToDecimal(byte[] bytes, int start = 0)
     {
-        if (bytes == null || bytes.Length < 16 || start + 16 > bytes.Length) return 0;
+        if (bytes == null || bytes.Length < 16 || start + 16 > bytes.Length)
+            return 0;
 
         byte[] extracted = TArray.Extract(bytes, start, 16);
         int[] bits = new int[4];
@@ -40,7 +39,7 @@ class TUtils
         if (bytes == null || bytes.Length == 0)
             return string.Empty;
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
         for (int i = 0; i < bytes.Length && bytes[i] != 0; i++)
         {
             sb.Append((char)bytes[i]);
@@ -54,11 +53,13 @@ class TUtils
         if (bytes == null || bytes.Length == 0)
             return string.Empty;
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
         for (int i = 0; i < bytes.Length; i++)
         {
-            if (bytes[i] < 32 || bytes[i] > 126) break;
-            else sb.Append((char)bytes[i]);
+            if (bytes[i] is < 32 or > 126)
+                break;
+            else
+                sb.Append((char)bytes[i]);
         }
 
         //sb.Append(0);
@@ -69,7 +70,7 @@ class TUtils
     {
         if (File.Exists(path))
         {
-            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(path);
+            var versionInfo = FileVersionInfo.GetVersionInfo(path);
             if (versionInfo.FileVersion != null)
             {
                 return
@@ -89,25 +90,26 @@ class TUtils
         while (text.Length <= length)
             text += Guid.NewGuid().ToString("N");
 
-        text = text.Remove(length);
+        text = text[..length];
         return text;
     }
 
     internal static byte[] StringToMultibyte(string text)
     {
-        List<byte> array = new List<byte>();
+        List<byte> array = [];
         for (int i = 0; i < text.Length; i++)
         {
             array.Add(Convert.ToByte(text[i]));
         }
 
         array.Add(0);
-        return array.ToArray();
+        return [.. array];
     }
 
     internal static bool Print(string message)
     {
-        if (Main.DebugMode) TImports.OutputDebugString("[UHARA] " + message);
+        if (Main.DebugMode)
+            TImports.OutputDebugString("[UHARA] " + message);
         return false;
     }
 }

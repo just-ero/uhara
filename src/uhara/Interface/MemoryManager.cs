@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
+﻿using LiveSplit.ComponentUtil;
+using System;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using LiveSplit.ComponentUtil;
 
 internal class MemoryManager
 {
@@ -18,8 +12,10 @@ internal class MemoryManager
     {
         try
         {
-            Thread newThread = new Thread(() => { _FreeMemoryDelayed(address, size); });
-            newThread.IsBackground = true;
+            Thread newThread = new Thread(() => { _FreeMemoryDelayed(address, size); })
+            {
+                IsBackground = true
+            };
             newThread.Start();
         }
         catch { }
@@ -29,11 +25,15 @@ internal class MemoryManager
     {
         try
         {
-            if (!TProcess.IsAlive(Main.ProcessInstance)) return;
+            if (!TProcess.IsAlive(Main.ProcessInstance))
+                return;
             string tempToken = TProcess.GetToken(Main.ProcessInstance);
-            for (int i = 0; i < 100; i++) Thread.Sleep(100); // 10 seconds
-            if (!TProcess.IsAlive(Main.ProcessInstance)) return;
-            if (tempToken != TProcess.GetToken(Main.ProcessInstance)) return;
+            for (int i = 0; i < 100; i++)
+                Thread.Sleep(100); // 10 seconds
+            if (!TProcess.IsAlive(Main.ProcessInstance))
+                return;
+            if (tempToken != TProcess.GetToken(Main.ProcessInstance))
+                return;
             TMemory.FreeMemory(Main.ProcessInstance, address, size);
             //TUtils.Print("Deallocated memory at 0x" + address.ToString("X"));
         }
@@ -47,7 +47,8 @@ internal class MemoryManager
             do
             {
                 ulong allocated = (ulong)Main.ProcessInstance.AllocateMemory(size);
-                if (allocated == 0) break;
+                if (allocated == 0)
+                    break;
 
                 FreeLargeMemoryInternal(allocated, size, time);
                 return allocated;
@@ -55,6 +56,7 @@ internal class MemoryManager
             while (false);
         }
         catch { }
+
         return 0;
     }
 
@@ -65,21 +67,24 @@ internal class MemoryManager
             do
             {
                 ulong _Sleep = TProcess.GetProcAddress(Main.ProcessInstance, "kernel32.dll", "Sleep");
-                if (_Sleep == 0) break;
+                if (_Sleep == 0)
+                    break;
 
                 ulong _VirtualFree = TProcess.GetProcAddress(Main.ProcessInstance, "kernel32.dll", "VirtualFree");
-                if (_VirtualFree == 0) break;
+                if (_VirtualFree == 0)
+                    break;
 
                 ulong allocated = (ulong)Main.ProcessInstance.AllocateMemory(0x1000);
-                if (allocated == 0) break;
+                if (allocated == 0)
+                    break;
 
-                byte[] bytesExec = new byte[]
-                {
+                byte[] bytesExec =
+                [
                    0x48, 0x83, 0xEC, 0x28, 0x48, 0x8B, 0x0D, 0xCD, 0xFF, 0xFF, 0xFF, 0x48, 0x8B, 0x05, 0xCE, 0xFF,
                    0xFF, 0xFF, 0xFF, 0xD0, 0x48, 0x8B, 0x0D, 0xCD, 0xFF, 0xFF, 0xFF, 0x48, 0x8B, 0x15, 0xCE, 0xFF,
                    0xFF, 0xFF, 0x49, 0xB8, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x05, 0xC5,
                    0xFF, 0xFF, 0xFF, 0xFF, 0xD0, 0x48, 0x83, 0xC4, 0x28, 0xC3
-                };
+                ];
 
                 byte[] writeBytes = TArray.Merge(
                     BitConverter.GetBytes((ulong)delay),
@@ -89,8 +94,8 @@ internal class MemoryManager
                     BitConverter.GetBytes(_VirtualFree),
                     bytesExec);
 
-                Main.ProcessInstance.WriteBytes((IntPtr)allocated, writeBytes);
-                Main.ProcessInstance.CreateThread((IntPtr)(allocated + 0x28));
+                Main.ProcessInstance.WriteBytes((nint)allocated, writeBytes);
+                Main.ProcessInstance.CreateThread((nint)(allocated + 0x28));
             }
             while (false);
         }
@@ -106,7 +111,8 @@ internal class MemoryManager
 
             foreach (string key in keys)
             {
-                if (!key.StartsWith(token)) TSaves2.DeleteKey(RegistryName, key);
+                if (!key.StartsWith(token))
+                    TSaves2.DeleteKey(RegistryName, key);
                 else if (!key.Contains(Main.UniqueScriptLoadID) || (!string.IsNullOrEmpty(uniqueId) && key.EndsWith(uniqueId)))
                 {
                     // recover
@@ -115,14 +121,16 @@ internal class MemoryManager
                         foreach (string valueName in valueNames)
                         {
                             string dataRaw = TSaves2.Get(RegistryName, key, Overwrite, valueName);
-                            if (dataRaw == null) continue;
+                            if (dataRaw == null)
+                                continue;
 
                             ulong address = TConvert.Parse<ulong>(valueName);
                             byte[] recover = TSignature.GetBytes(dataRaw);
 
-                            if (address == 0 || recover == null) continue;
+                            if (address == 0 || recover == null)
+                                continue;
 
-                            Main.ProcessInstance.WriteBytes((IntPtr)address, recover);
+                            Main.ProcessInstance.WriteBytes((nint)address, recover);
                             if (!TMemory.ConfirmBytes(Main.ProcessInstance, address, recover))
                                 throw new Exception("Memory recovery exception");
 
@@ -138,12 +146,14 @@ internal class MemoryManager
                         foreach (string valueName in valueNames)
                         {
                             string dataRaw = TSaves2.Get(RegistryName, key, Allocate, valueName);
-                            if (dataRaw == null) continue;
+                            if (dataRaw == null)
+                                continue;
 
                             ulong address = TConvert.Parse<ulong>(valueName);
                             int size = TConvert.Parse<int>(dataRaw);
 
-                            if (address == 0 || size == 0) continue;
+                            if (address == 0 || size == 0)
+                                continue;
 
                             TSaves2.DeleteValue(RegistryName, key, Allocate, valueName);
                             FreeMemoryDelayed(address, size);
@@ -172,6 +182,7 @@ internal class MemoryManager
             }
         }
         catch { }
+
         return 0;
     }
 

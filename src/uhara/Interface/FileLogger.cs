@@ -1,21 +1,17 @@
 ﻿using LiveSplit.Model;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 public class FileLogger
 {
-    string FilePath;
-    int MaxLines;
-    int RemoveLines;
-    bool Enabled;
+    private string FilePath;
+    private int MaxLines;
+    private int RemoveLines;
+    private bool Enabled;
 
-    int CurrentLines;
+    private int CurrentLines;
 
     public void Start(string filePath, int maxLines = 6000, int removeLinesCountWhenExceeded = 1000)
     {
@@ -30,7 +26,8 @@ public class FileLogger
                 throw new Exception("Max lines can't exceed remove lines");
 
             // ---
-            if (File.Exists(FilePath)) CurrentLines = File.ReadAllLines(FilePath).Length;
+            if (File.Exists(FilePath))
+                CurrentLines = File.ReadAllLines(FilePath).Length;
 
             // ---
             Enabled = true;
@@ -51,15 +48,17 @@ public class FileLogger
     {
         try
         {
-            if (!Enabled) return;
+            if (!Enabled)
+                return;
 
             // ---
             string gameName = Main.ProcessInstance.ProcessName;
-            if (string.IsNullOrEmpty(gameName)) throw new Exception("Couldn't retrieve game name for logging");
+            if (string.IsNullOrEmpty(gameName))
+                throw new Exception("Couldn't retrieve game name for logging");
 
             string stamp = "00:00:00.000";
             {
-                TimeSpan ts = new TimeSpan();
+                TimeSpan ts = new();
                 if (Main.CurrentState.CurrentTimingMethod == TimingMethod.GameTime && Main.CurrentState.CurrentTime.GameTime.HasValue)
                     ts = Main.CurrentState.CurrentTime.GameTime.Value;
 

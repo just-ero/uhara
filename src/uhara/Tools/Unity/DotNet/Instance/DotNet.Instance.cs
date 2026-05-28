@@ -1,14 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
-using System.Windows.Forms;
 using static Tools.Unity.DotNet.Instance.InstanceCreation;
 
 public partial class Tools
@@ -25,8 +17,10 @@ public partial class Tools
                     try
                     {
                         instanceCreation.DefaultImage = imageName;
-                        if (namespaceName != null) instanceCreation.DefaultNamespace = namespaceName;
-                        if (className != null) instanceCreation.DefaultClass = className;
+                        if (namespaceName != null)
+                            instanceCreation.DefaultNamespace = namespaceName;
+                        if (className != null)
+                            instanceCreation.DefaultClass = className;
                     }
                     catch { }
                 }
@@ -48,6 +42,7 @@ public partial class Tools
                         return instanceCreation.AddArgument(ArgTypes.Instance, 1, fullName, fieldsNames);
                     }
                     catch { }
+
                     return null;
                 }
 
@@ -57,11 +52,11 @@ public partial class Tools
                     {
                         do
                         {
-                            PtrResolver ptrResolver = new PtrResolver();
+                            PtrResolver ptrResolver = new();
                             InstanceWatcherBuildMultiple watcherBuildMultiple = instanceCreation.AddArgumentMultiple(ArgTypes.Instance, instances, fullName, fieldsNames);
 
                             for (int i = 0; i < watcherBuildMultiple.Base.Length; i++)
-                                ptrResolver.Watch<T>(watcherName + i.ToString(), watcherBuildMultiple.Base[i], watcherBuildMultiple.Offsets);
+                                ptrResolver.Watch<T>(watcherName + i, watcherBuildMultiple.Base[i], watcherBuildMultiple.Offsets);
                         }
                         while (false);
                     }
@@ -79,6 +74,7 @@ public partial class Tools
                         while (false);
                     }
                     catch { }
+
                     return null;
                 }
 
@@ -99,6 +95,7 @@ public partial class Tools
                         return instanceCreation.AddArgument(ArgTypes.Flag, 1, fullName);
                     }
                     catch { }
+
                     return null;
 
                 }
@@ -110,7 +107,8 @@ public partial class Tools
                         do
                         {
                             int[] offs = GetPathInt(fullName, fieldNames);
-                            if (offs == null || offs.Length == 0) break;
+                            if (offs == null || offs.Length == 0)
+                                break;
 
                             string[] strs = new string[offs.Length];
                             for (int i = 0; i < offs.Length; i++)
@@ -121,6 +119,7 @@ public partial class Tools
                         while (false);
                     }
                     catch { }
+
                     return null;
                 }
 
@@ -131,7 +130,8 @@ public partial class Tools
                         do
                         {
                             string[] nameData = fullName.Split(':');
-                            if (nameData.Length > 3) break;
+                            if (nameData.Length > 3)
+                                break;
 
                             string[] fullNameData = TArray.Merge(new string[3 - nameData.Length], nameData);
                             string imageName = fullNameData[0] ?? instanceCreation.DefaultImage;
@@ -139,21 +139,26 @@ public partial class Tools
                             string className = fullNameData[2] ?? instanceCreation.DefaultClass;
 
                             var pathInfo = offsetResolver.GetPath(imageName, namespaceName, className, fieldNames);
-                            if (pathInfo == null) break;
-                            if (pathInfo.Offsets == null) break;
-                            if (pathInfo.Offsets.Length == 0) break;
-                            if (pathInfo.Offsets.Length < fieldNames.Length) break;
+                            if (pathInfo == null)
+                                break;
+                            if (pathInfo.Offsets == null)
+                                break;
+                            if (pathInfo.Offsets.Length == 0)
+                                break;
+                            if (pathInfo.Offsets.Length < fieldNames.Length)
+                                break;
 
                             // ---
-                            List<int> offsets = new List<int>();
+                            List<int> offsets = [];
                             for (int i = 0; i < fieldNames.Length; i++)
                                 offsets.Add(pathInfo.Offsets[i]);
 
-                            return offsets.ToArray();
+                            return [.. offsets];
                         }
                         while (false);
                     }
                     catch { }
+
                     return null;
                 }
 
@@ -169,6 +174,7 @@ public partial class Tools
                         while (false);
                     }
                     catch { }
+
                     return null;
                 }
                 #endregion
@@ -183,7 +189,7 @@ public partial class Tools
 
                 internal static bool LegacyVersion = false;
 
-                enum Result
+                private enum Result
                 {
                     None = 0,
                     Success = 1,
@@ -196,7 +202,8 @@ public partial class Tools
                     {
                         while (true)
                         {
-                            if (!Main.ReloadProcess()) throw new Exception();
+                            if (!Main.ReloadProcess())
+                                throw new Exception();
 
                             if (Main.ProcessInstance.MainWindowHandle != IntPtr.Zero)
                                 break;
@@ -209,29 +216,39 @@ public partial class Tools
                         {
                             do
                             {
-                                if (!Main.ReloadProcess()) throw new Exception();
+                                if (!Main.ReloadProcess())
+                                    throw new Exception();
                                 try
                                 {
-                                    if (Main.ProcessInstance == null) break;
+                                    if (Main.ProcessInstance == null)
+                                        break;
 
                                     if (TProcess.GetModuleBase(Main.ProcessInstance, "mono-2.0-bdwgc.dll") != 0)
                                     {
-                                        if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0) break;
+                                        if (TProcess.GetModuleBase(Main.ProcessInstance, "UnityPlayer.dll") == 0)
+                                            break;
                                         byte[] modBytes = TProcess.GetModuleBytes(Main.ProcessInstance, "UnityPlayer.dll");
-                                        if (modBytes == null || modBytes.Length == 0) break;
+                                        if (modBytes == null || modBytes.Length == 0)
+                                            break;
                                     }
-                                    else if (TProcess.GetModuleBase(Main.ProcessInstance, "mono.dll") == 0) break;
+                                    else if (TProcess.GetModuleBase(Main.ProcessInstance, "mono.dll") == 0)
+                                        break;
 
-                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll") == 0) break;
+                                    if (TProcess.GetModuleBase(Main.ProcessInstance, "kernel32.dll") == 0)
+                                        break;
                                 }
                                 catch { }
+
                                 success = true;
                             }
                             while (false);
                             Thread.Sleep(300);
                         }
                     }
-                    catch { return; }
+                    catch
+                    {
+                        return;
+                    }
 
                     MemoryManager.ClearMemory(ToolUniqueID);
 

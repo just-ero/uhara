@@ -1,11 +1,6 @@
 ﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-class TSaves2
+internal class TSaves2
 {
     private static string Developer = "";
     private static string Software = "";
@@ -14,7 +9,7 @@ class TSaves2
 
     public static void DeleteKey(string path)
     {
-        DeleteKey(new string[] { path });
+        DeleteKey([path]);
     }
 
     public static void DeleteKey(params string[] location)
@@ -24,14 +19,14 @@ class TSaves2
 
         if (key != null)
         {
-            key.DeleteSubKeyTree(location[location.Length - 1]);
+            key.DeleteSubKeyTree(location[^1]);
             key.Close();
         }
     }
 
     public static void DeleteValue(string path)
     {
-        DeleteValue(new string[] { path });
+        DeleteValue([path]);
     }
 
     public static void DeleteValue(params string[] location)
@@ -41,7 +36,7 @@ class TSaves2
 
         if (key != null)
         {
-            key.DeleteValue(location[location.Length - 1], false);
+            key.DeleteValue(location[^1], false);
             key.Close();
         }
     }
@@ -61,7 +56,7 @@ class TSaves2
             }
         }
 
-        return Array.Empty<string>();
+        return [];
     }
 
     public static string[] GetKeyNames(params string[] location)
@@ -79,7 +74,7 @@ class TSaves2
             }
         }
 
-        return Array.Empty<string>();
+        return [];
     }
 
     public static void Register(string developer, string software)
@@ -98,7 +93,7 @@ class TSaves2
 
             if (key != null)
             {
-                object value = key.GetValue(location[location.Length - 1]);
+                object value = key.GetValue(location[^1]);
                 key.Close();
 
                 if (value != null)
@@ -109,7 +104,6 @@ class TSaves2
         return null;
     }
 
-
     public static void Set(string data, params string[] location)
     {
         if (Registered)
@@ -119,7 +113,7 @@ class TSaves2
 
             if (key != null)
             {
-                key.SetValue(location[location.Length - 1], data, RegistryValueKind.String);
+                key.SetValue(location[^1], data, RegistryValueKind.String);
                 key.Close();
             }
         }
@@ -131,7 +125,8 @@ class TSaves2
         RegistryKey key = hkcu.OpenSubKey(keyPath, writable: true);
         if (key == null)
         {
-            if (createIfNull) key = hkcu.CreateSubKey(keyPath);
+            if (createIfNull)
+                key = hkcu.CreateSubKey(keyPath);
 
             hkcu.Close();
             return key;

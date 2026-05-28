@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-class UDynamicVars
+internal class UDynamicVars
 {
-    private Dictionary<string, object> storage = new Dictionary<string, object>();
+    private readonly Dictionary<string, object> storage = [];
 
     public object this[string identifier]
     {
@@ -16,11 +12,10 @@ class UDynamicVars
             {
                 return result;
             }
+
             return null;
         }
-        set
-        {
-            storage[identifier] = value;
-        }
+
+        set => storage[identifier] = value;
     }
 }

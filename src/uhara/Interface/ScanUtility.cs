@@ -1,12 +1,7 @@
 ﻿using SharpDisasm;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using static TSignature;
 
 internal class ScanUtility
@@ -17,7 +12,7 @@ internal class ScanUtility
         UnrealEngine
     }
 
-    internal static Dictionary<string, List<string>> ExpandSignatures = new Dictionary<string, List<string>>();
+    internal static Dictionary<string, List<string>> ExpandSignatures = [];
 
     internal class UnrealEngine
     {
@@ -32,27 +27,31 @@ internal class ScanUtility
                     {
                         do
                         {
-                            ScanData scanData = new ScanData();
-                            scanData.Signature = "00 00 00 80 00 00 10";
-                            scanData.ReversedSearch = true;
-
-                            scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                            ScanData scanData = new ScanData
                             {
-                                new KeyValuePair<string, int>("FF FF 48 81 EC , 48 81 EC ?? ?? 00 00", 100),
-                                new KeyValuePair<string, int>("C3 CC , E9 ?? ?? ?? ?? CC , CC CC", 115),
+                                Signature = "00 00 00 80 00 00 10",
+                                ReversedSearch = true,
+                                Checkpoints = [
+                                    new("FF FF 48 81 EC , 48 81 EC ?? ?? 00 00", 100),
+                                    new("C3 CC , E9 ?? ?? ?? ?? CC , CC CC", 115),
+                                ],
+                                QueenCheckpointIndex = 2
                             };
-                            scanData.QueenCheckpointIndex = 2;
 
                             ulong address = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
-                            if (address == 0) break;
+                            if (address == 0)
+                                break;
 
                             byte[] instrBytes = TMemory.ReadMemoryBytes(Main.ProcessInstance, address, 50);
-                            if (instrBytes == null) break;
+                            if (instrBytes == null)
+                                break;
 
                             Instruction[] instrs = TInstruction.GetInstructions2(instrBytes);
-                            if (instrs == null) break;
+                            if (instrs == null)
+                                break;
 
-                            if (instrs.Length < 2) break;
+                            if (instrs.Length < 2)
+                                break;
 
                             int offset = 0;
                             for (int i = 1; i < instrs.Length; i++)
@@ -63,6 +62,7 @@ internal class ScanUtility
                                     result = address;
                                     break;
                                 }
+
                                 offset += instrs[i].Bytes.Length;
                             }
                         }
@@ -76,8 +76,8 @@ internal class ScanUtility
                             List<string> signatures = ExpandSignatures[identifier.ToString()];
                             foreach (string signature in signatures)
                             {
-                                IntPtr address = TMemory.ScanSimple(Main.ProcessInstance, signature);
-                                if (address != IntPtr.Zero)
+                                nint address = TMemory.ScanSimple(Main.ProcessInstance, signature);
+                                if (address != 0)
                                 {
                                     result = (ulong)address;
                                     break;
@@ -88,20 +88,21 @@ internal class ScanUtility
 
                     return result;
                 }
-
                 else if (function == Function.UObject_BeginDestroy)
                 {
                     ulong result = 0;
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "48 83 EC ?? 8B 41 08 48 8B D9 C1 E8 0F A8 01 75";
-                        scanData.FindStartFunction = true;
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("83 7C 24 ?? 00", 100),
+                            Signature = "48 83 EC ?? 8B 41 08 48 8B D9 C1 E8 0F A8 01 75",
+                            FindStartFunction = true,
+
+                            Checkpoints =
+                            [
+                                new("83 7C 24 ?? 00", 100),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -109,14 +110,16 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "FF 25 00 00 00 00";
-                        scanData.FindStartFunction = true;
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("A8 01 75", 30),
-                            new KeyValuePair<string, int>("83 7C 24 ?? 00", 70),
+                            Signature = "FF 25 00 00 00 00",
+                            FindStartFunction = true,
+
+                            Checkpoints =
+                            [
+                                new("A8 01 75", 30),
+                                new("83 7C 24 ?? 00", 70),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -124,22 +127,26 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "48 83 EC ?? 8B 41 08 48 8D 71 08 C1 E8 0F 33 ED 48 8B F9 A8 01 0F 85";
-                        scanData.FindStartFunction = true;
+                        ScanData scanData = new ScanData
+                        {
+                            Signature = "48 83 EC ?? 8B 41 08 48 8D 71 08 C1 E8 0F 33 ED 48 8B F9 A8 01 0F 85",
+                            FindStartFunction = true
+                        };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
                     }
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "FF 25 00 00 00 00";
-                        scanData.FindStartFunction = true;
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("A8 01 0F 85", 50),
+                            Signature = "FF 25 00 00 00 00",
+                            FindStartFunction = true,
+
+                            Checkpoints =
+                            [
+                                new("A8 01 0F 85", 50),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -171,12 +178,14 @@ internal class ScanUtility
                                         ulong resolved = (ulong)((long)ins.Offset + value + ins.Bytes.Length);
 
                                         byte[] readBytes = TMemory.ReadMemoryBytes(Main.ProcessInstance, resolved, logMessage.Length);
-                                        if (readBytes == null) continue;
+                                        if (readBytes == null)
+                                            continue;
 
                                         if (logMessage.SequenceEqual(readBytes))
                                         {
                                             ulong funcStart = TMemory.GetFunctionStart(Main.ProcessInstance, scanResult);
-                                            if (funcStart == 0) continue;
+                                            if (funcStart == 0)
+                                                continue;
 
                                             result = funcStart;
                                             break;
@@ -186,7 +195,8 @@ internal class ScanUtility
                             }
                             catch { }
 
-                            if (result != 0) break;
+                            if (result != 0)
+                                break;
                         }
 
                         if (result == 0)
@@ -196,8 +206,8 @@ internal class ScanUtility
                                 List<string> signatures = ExpandSignatures[identifier.ToString()];
                                 foreach (string signature in signatures)
                                 {
-                                    IntPtr address = TMemory.ScanSimple(Main.ProcessInstance, signature);
-                                    if (address != IntPtr.Zero)
+                                    nint address = TMemory.ScanSimple(Main.ProcessInstance, signature);
+                                    if (address != 0)
                                     {
                                         result = (ulong)address;
                                         break;
@@ -233,12 +243,14 @@ internal class ScanUtility
                                         ulong resolved = (ulong)((long)ins.Offset + value + ins.Bytes.Length);
 
                                         byte[] readBytes = TMemory.ReadMemoryBytes(Main.ProcessInstance, resolved, logMessage.Length);
-                                        if (readBytes == null) continue;
+                                        if (readBytes == null)
+                                            continue;
 
                                         if (logMessage.SequenceEqual(readBytes))
                                         {
                                             ulong funcStart = TMemory.GetFunctionStart(Main.ProcessInstance, scanResult);
-                                            if (funcStart == 0) continue;
+                                            if (funcStart == 0)
+                                                continue;
 
                                             result = funcStart;
                                             break;
@@ -248,7 +260,8 @@ internal class ScanUtility
                             }
                             catch { }
 
-                            if (result != 0) break;
+                            if (result != 0)
+                                break;
                         }
                     }
 
@@ -259,8 +272,8 @@ internal class ScanUtility
                             List<string> signatures = ExpandSignatures[identifier.ToString()];
                             foreach (string signature in signatures)
                             {
-                                IntPtr address = TMemory.ScanSimple(Main.ProcessInstance, signature);
-                                if (address != IntPtr.Zero)
+                                nint address = TMemory.ScanSimple(Main.ProcessInstance, signature);
+                                if (address != 0)
                                 {
                                     result = (ulong)address;
                                     break;
@@ -271,19 +284,20 @@ internal class ScanUtility
 
                     return result;
                 }
-
                 else if (function == Function.UObjectProcessEvent)
                 {
                     ulong result = 0;
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "40 55 56 57 41 54 41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00";
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
+                            Signature = "40 55 56 57 41 54 41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
+
+                            Checkpoints =
+                            [
+                                new("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -291,12 +305,14 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "40 55 56 57 41 54 41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00";
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
+                            Signature = "40 55 56 57 41 54 41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
+
+                            Checkpoints =
+                            [
+                                new("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -304,40 +320,48 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00";
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
+                            Signature = "41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
+
+                            Checkpoints =
+                            [
+                                new("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
-                        if (result != 0) result += 2;
+                        if (result != 0)
+                            result += 2;
                     }
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00";
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
+                            Signature = "41 55 41 56 41 57 48 81 EC ?? ?? 00 00 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
+
+                            Checkpoints =
+                            [
+                                new("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
-                        if (result != 0) result += 2;
+                        if (result != 0)
+                            result += 2;
                     }
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00";
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
+                            Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
+
+                            Checkpoints =
+                            [
+                                new("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -345,12 +369,14 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00";
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
+                            Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 48 8D 6C 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
+
+                            Checkpoints =
+                            [
+                                new("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -359,26 +385,31 @@ internal class ScanUtility
                     // ugh, need to make it better one day
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00";
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
+                            Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
+
+                            Checkpoints =
+                            [
+                                new("F7 82 ?? 00 00 00 00 ?? 00 00", 150),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
-                        if (result != 0) result += 2;
+                        if (result != 0)
+                            result += 2;
                     }
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00";
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
+                            Signature = "FF 25 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? 24 ?? 48 89 9D ?? ?? 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 85 ?? 00 00 00",
+
+                            Checkpoints =
+                            [
+                                new("F7 86 ?? 00 00 00 ?? ?? 00 00", 185),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -391,8 +422,8 @@ internal class ScanUtility
                             List<string> signatures = ExpandSignatures[identifier.ToString()];
                             foreach (string signature in signatures)
                             {
-                                IntPtr address = TMemory.ScanSimple(Main.ProcessInstance, signature);
-                                if (address != IntPtr.Zero)
+                                nint address = TMemory.ScanSimple(Main.ProcessInstance, signature);
+                                if (address != 0)
                                 {
                                     result = (ulong)address;
                                     break;
@@ -403,20 +434,21 @@ internal class ScanUtility
 
                     return result;
                 }
-
                 else if (function == Function.UMovieSceneSequencePlayer_Update)
                 {
                     ulong result = 0;
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "48 ?? ?? FF ?? ?? ?? 00 00 F3 0F 59 F0";
-                        scanData.FindStartFunction = true;
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("F3 0F 11 3B C6 43 04 01", 0x140),
+                            Signature = "48 ?? ?? FF ?? ?? ?? 00 00 F3 0F 59 F0",
+                            FindStartFunction = true,
+
+                            Checkpoints =
+                            [
+                                new("F3 0F 11 3B C6 43 04 01", 0x140),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -424,14 +456,16 @@ internal class ScanUtility
 
                     if (result == 0)
                     {
-                        ScanData scanData = new ScanData();
-                        scanData.Signature = "80 BB ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? F6 83";
-                        scanData.ReversedSearch = true;
-                        scanData.QueenCheckpointIndex = 1;
-
-                        scanData.Checkpoints = new List<KeyValuePair<string, int>>
+                        ScanData scanData = new ScanData
                         {
-                            new KeyValuePair<string, int>("?? ?? 48 83 EC ?? 48 8B 41 28 , FF 25 00 00 00 00", 165),
+                            Signature = "80 BB ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? F6 83",
+                            ReversedSearch = true,
+                            QueenCheckpointIndex = 1,
+
+                            Checkpoints =
+                            [
+                                new("?? ?? 48 83 EC ?? 48 8B 41 28 , FF 25 00 00 00 00", 165),
+                            ]
                         };
 
                         result = TMemory.ScanAdvanced(Main.ProcessInstance, scanData);
@@ -444,8 +478,8 @@ internal class ScanUtility
                             List<string> signatures = ExpandSignatures[identifier.ToString()];
                             foreach (string signature in signatures)
                             {
-                                IntPtr address = TMemory.ScanSimple(Main.ProcessInstance, signature);
-                                if (address != IntPtr.Zero)
+                                nint address = TMemory.ScanSimple(Main.ProcessInstance, signature);
+                                if (address != 0)
                                 {
                                     result = (ulong)address;
                                     break;
@@ -457,7 +491,6 @@ internal class ScanUtility
                     return result;
                 }
             }
-
             else if (identifier is Data data)
             {
                 if (data == Data.FNamePool)
@@ -487,25 +520,31 @@ internal class ScanUtility
                         do
                         {
                             ulong address = TMemory.ScanSingle(Main.ProcessInstance, "E8 ???????? 4C 8B C8 41 8B ?? 99 81 E2 FF 3F 00 00");
-                            if (address == 0) break;
+                            if (address == 0)
+                                break;
 
                             {
                                 int value = TMemory.ReadMemory<int>(Main.ProcessInstance, address + 1);
                                 address = (ulong)((long)address + value + 5);
 
                                 byte[] bytes = TMemory.ReadMemoryBytes(Main.ProcessInstance, address, 50);
-                                if (bytes == null) break;
+                                if (bytes == null)
+                                    break;
 
                                 Instruction[] instrs = TInstruction.GetInstructions2(bytes, address);
-                                if (instrs == null || instrs.Length < 2) break;
+                                if (instrs == null || instrs.Length < 2)
+                                    break;
 
-                                if (instrs[1].Length != 7) break;
-                                if (!instrs[1].ToString().Contains("rax, [")) break;
+                                if (instrs[1].Length != 7)
+                                    break;
+                                if (!instrs[1].ToString().Contains("rax, ["))
+                                    break;
 
                                 address = instrs[1].Offset;
 
                                 value = TMemory.ReadMemory<int>(Main.ProcessInstance, address + 3);
-                                if (value == 0) break;
+                                if (value == 0)
+                                    break;
 
                                 result = (ulong)((long)address + value + 7);
                             }
@@ -520,8 +559,8 @@ internal class ScanUtility
                             List<string> signatures = ExpandSignatures[identifier.ToString()];
                             foreach (string signature in signatures)
                             {
-                                IntPtr address = TMemory.ScanSimple(Main.ProcessInstance, signature);
-                                if (address != IntPtr.Zero)
+                                nint address = TMemory.ScanSimple(Main.ProcessInstance, signature);
+                                if (address != 0)
                                 {
                                     result = (ulong)address;
                                     break;

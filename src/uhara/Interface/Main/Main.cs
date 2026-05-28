@@ -1,12 +1,8 @@
 ﻿using LiveSplit.ComponentUtil;
 using LiveSplit.Model;
 using LiveSplit.View;
-using Microsoft.CSharp;
-using Microsoft.VisualBasic;
 using SharpDisasm;
 using System;
-using System.CodeDom.Compiler;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,18 +10,15 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Security.Policy;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 public partial class Main
 {
     public static string LIB_VERSION = "10";
 
-    public ScriptSettings Settings = new ScriptSettings();
-    public FileLogger FileLogger = new FileLogger();
+    public ScriptSettings Settings = new();
+    public FileLogger FileLogger = new();
 
     // ---
     internal static LiveSplitState CurrentState;
@@ -40,9 +33,9 @@ public partial class Main
         internal static readonly int List = 2;
     }
 
-    internal static List<MemoryWatcher> MemoryWatchers = new List<MemoryWatcher>();
-    internal static List<(int style, Type type, MemoryWatcher memoryWatcher, DeepPointer deepPointer)> CountableWatchers = new List<(int, Type, MemoryWatcher, DeepPointer)>();
-    internal static List<StringWatcher> StringWatchers = new List<StringWatcher>();
+    internal static List<MemoryWatcher> MemoryWatchers = [];
+    internal static List<(int style, Type type, MemoryWatcher memoryWatcher, DeepPointer deepPointer)> CountableWatchers = [];
+    internal static List<StringWatcher> StringWatchers = [];
 
     internal static dynamic Vars;
     public static bool DebugMode = true;
@@ -57,13 +50,12 @@ public partial class Main
     {
         get
         {
-            if (bf_script == null) CheckSetProcessAndValues();
+            if (bf_script == null)
+                CheckSetProcessAndValues();
             return bf_script;
         }
-        set
-        {
-            bf_script = value;
-        }
+
+        set => bf_script = value;
     }
 
     private static volatile Process bf_ProcessInstance = null;
@@ -73,17 +65,24 @@ public partial class Main
         {
             do
             {
-                if (bf_ProcessInstance != null && !bf_ProcessInstance.HasExited) break;
+                if (bf_ProcessInstance != null && !bf_ProcessInstance.HasExited)
+                    break;
                 bf_ProcessInstance = null;
 
                 FieldInfo gameField = _script.GetType().GetField("_game", BindingFlags.NonPublic | BindingFlags.Instance);
                 Process gameInstance = (Process)(gameField?.GetValue(_script));
-                if (gameInstance == null) break;
+                if (gameInstance == null)
+                    break;
 
                 Process tempProcess = null;
-                try { tempProcess = Process.GetProcessById(gameInstance.Id); } catch { }
+                try
+                {
+                    tempProcess = Process.GetProcessById(gameInstance.Id);
+                }
+                catch { }
 
-                if (TProcess.IsSameProcess(tempProcess, gameInstance)) bf_ProcessInstance = tempProcess;
+                if (TProcess.IsSameProcess(tempProcess, gameInstance))
+                    bf_ProcessInstance = tempProcess;
             }
             while (false);
             return bf_ProcessInstance;
@@ -93,30 +92,18 @@ public partial class Main
             Process tempProcess = value;
             Process newProcess = null;
 
-            try { newProcess = Process.GetProcessById(tempProcess.Id); } catch { }
+            try
+            {
+                newProcess = Process.GetProcessById(tempProcess.Id);
+            }
+            catch { }
+
             bf_ProcessInstance = newProcess;
         }
     }
 
-    private static IDictionary<string, object> _current;
-    internal static IDictionary<string, object> current
-    {
-        get
-        {
-            if (_current == null) _current = _script.State?.Data;
-            return _current;
-        }
-    }
-
-    private static IDictionary<string, object> _old;
-    internal static IDictionary<string, object> old
-    {
-        get
-        {
-            if (_old == null) _old = _script.OldState?.Data;
-            return _old;
-        }
-    }
+    internal static IDictionary<string, object> current => field ??= _script.State?.Data;
+    internal static IDictionary<string, object> old => field ??= _script.OldState?.Data;
 
     public Main()
     {
@@ -152,19 +139,21 @@ public partial class Main
     {
         try
         {
-            return Disassemble(bytes, IntPtr.Zero);
+            return Disassemble(bytes, 0);
         }
         catch { }
+
         return null;
     }
 
-    public Instruction[] Disassemble(byte[] bytes, IntPtr address)
+    public Instruction[] Disassemble(byte[] bytes, nint address)
     {
         try
         {
             return TInstruction.GetInstructions2(bytes, (ulong)address);
         }
         catch { }
+
         return null;
     }
 
@@ -186,7 +175,7 @@ public partial class Main
         catch { }
     }
 
-    public static void AddWatcher<T>(IntPtr baseAddress, params int[] offsets) where T : unmanaged
+    public static void AddWatcher<T>(nint baseAddress, params int[] offsets) where T : unmanaged
     {
         try
         {
@@ -199,21 +188,33 @@ public partial class Main
     {
         do
         {
-            if (ProcessInstance == null || ProcessInstance.HasExited) break;
+            if (ProcessInstance == null || ProcessInstance.HasExited)
+                break;
 
             string lastName = ProcessInstance.ProcessName;
             string lastToken = TProcess.GetToken(ProcessInstance);
-            if (string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(lastToken)) break;
+            if (string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(lastToken))
+                break;
 
-            try { ProcessInstance = Process.GetProcessById(ProcessInstance.Id); } catch { };
-            if (ProcessInstance == null || ProcessInstance.HasExited) break;
+            try
+            {
+                ProcessInstance = Process.GetProcessById(ProcessInstance.Id);
+            }
+            catch { }
+
+            ;
+            if (ProcessInstance == null || ProcessInstance.HasExited)
+                break;
 
             string currentName = ProcessInstance.ProcessName;
             string currentToken = TProcess.GetToken(ProcessInstance);
-            if (string.IsNullOrEmpty(currentName) || string.IsNullOrEmpty(currentToken)) break;
+            if (string.IsNullOrEmpty(currentName) || string.IsNullOrEmpty(currentToken))
+                break;
 
-            if (currentName != lastName) break;
-            if (currentToken != lastToken) break;
+            if (currentName != lastName)
+                break;
+            if (currentToken != lastToken)
+                break;
 
             return true;
         }
@@ -234,7 +235,9 @@ public partial class Main
                     break;
                 }
             }
-            if (timerForm == null) return;
+
+            if (timerForm == null)
+                return;
 
             bf_script = null;
             CurrentState = timerForm.CurrentState;
@@ -253,7 +256,8 @@ public partial class Main
                     if (component.GetType().Name.Contains("ASLComponent"))
                     {
                         bf_script = component.Script;
-                        if (bf_script != null) break;
+                        if (bf_script != null)
+                            break;
                     }
                 }
             }
@@ -273,7 +277,8 @@ public partial class Main
     internal static void SetProcessCache(string id, string name, string data)
     {
         string token = TProcess.GetToken(ProcessInstance);
-        if (string.IsNullOrEmpty(token)) return;
+        if (string.IsNullOrEmpty(token))
+            return;
 
         TSaves2.Set(data, "ProcessCache", id, name);
         TSaves2.Set(token, "ProcessCache", id, name, "Token");
@@ -282,15 +287,19 @@ public partial class Main
     internal static string GetProcessCache(string id, string name)
     {
         string token = TProcess.GetToken(ProcessInstance);
-        if (string.IsNullOrEmpty(token)) return null;
+        if (string.IsNullOrEmpty(token))
+            return null;
 
         string data = TSaves2.Get("ProcessCache", id, name);
-        if (string.IsNullOrEmpty(data)) return null;
+        if (string.IsNullOrEmpty(data))
+            return null;
 
         string dataToken = TSaves2.Get("ProcessCache", id, name, "Token");
-        if (string.IsNullOrEmpty(dataToken)) return null;
+        if (string.IsNullOrEmpty(dataToken))
+            return null;
 
-        if (token == dataToken) return data;
+        if (token == dataToken)
+            return data;
         return null;
     }
 
@@ -300,11 +309,11 @@ public partial class Main
         {
             try
             {
-                MemoryWatcher watcher = MemoryWatchers.FirstOrDefault(m => m.Name == key);
-                if (watcher == null) watcher = StringWatchers.FirstOrDefault(m => m.Name == key);
+                MemoryWatcher watcher = MemoryWatchers.FirstOrDefault(m => m.Name == key) ?? StringWatchers.FirstOrDefault(m => m.Name == key);
                 return watcher;
             }
             catch { }
+
             return null;
         }
     }
@@ -325,12 +334,14 @@ public partial class Main
         {
             ReloadProcess();
             ProcessModule processModule = TProcess.GetModule(ProcessInstance, moduleName);
-            if (processModule == null) return false;
+            if (processModule == null)
+                return false;
 
             ulong modBase = TProcess.GetModuleBase(ProcessInstance, moduleName);
             return modBase != 0;
         }
         catch { }
+
         return false;
     }
 
@@ -341,6 +352,7 @@ public partial class Main
             return TProcess.Is64Bit(ProcessInstance);
         }
         catch { }
+
         return false;
     }
 
@@ -351,10 +363,12 @@ public partial class Main
             do
             {
                 string processName = ProcessInstance.ProcessName;
-                if (string.IsNullOrEmpty(processName)) break;
+                if (string.IsNullOrEmpty(processName))
+                    break;
 
                 Process[] processes = Process.GetProcessesByName(processName);
-                if (processes == null || processes.Length == 0) break;
+                if (processes == null || processes.Length == 0)
+                    break;
 
                 foreach (Process process in processes)
                 {
@@ -373,6 +387,7 @@ public partial class Main
             while (false);
         }
         catch { }
+
         _script.GetType().GetField("_game", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_script, null);
     }
 
@@ -386,6 +401,7 @@ public partial class Main
             }
         }
         catch { }
+
         return true;
     }
 
@@ -396,6 +412,7 @@ public partial class Main
             return Reject(ProcessInstance.MainModule, moduleMemorySizes);
         }
         catch { }
+
         return false;
     }
 
@@ -406,6 +423,7 @@ public partial class Main
             return Reject(TProcess.GetModule(ProcessInstance, module), moduleMemorySizes);
         }
         catch { }
+
         return false;
     }
 
@@ -439,6 +457,7 @@ public partial class Main
             }
         }
         catch { }
+
         return false;
     }
 
@@ -449,6 +468,7 @@ public partial class Main
             return TProcess.GetImageSize(ProcessInstance, module);
         }
         catch { }
+
         return 0;
     }
 
@@ -459,6 +479,7 @@ public partial class Main
             return TProcess.GetImageSize(ProcessInstance, moduleName);
         }
         catch { }
+
         return 0;
     }
 
@@ -466,10 +487,12 @@ public partial class Main
     {
         try
         {
-            if (string.IsNullOrEmpty(modulePath) || !File.Exists(modulePath)) modulePath = ProcessInstance.MainModule.FileName;
+            if (string.IsNullOrEmpty(modulePath) || !File.Exists(modulePath))
+                modulePath = ProcessInstance.MainModule.FileName;
             return GetHash(modulePath);
         }
         catch { }
+
         return null;
     }
 
@@ -477,17 +500,18 @@ public partial class Main
     {
         try
         {
-            if (!File.Exists(filePath)) return null;
+            if (!File.Exists(filePath))
+                return null;
 
-            byte[] bytes = new byte[0];
-            using (var md5 = MD5.Create())
-            {
-                using (var file = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    bytes = md5.ComputeHash(file);
-            }
+            byte[] bytes = [];
+            using var md5 = MD5.Create();
+            using var file = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            bytes = md5.ComputeHash(file);
+
             return bytes.Select(x => x.ToString("X2")).Aggregate((a, b) => a + b);
         }
         catch { }
+
         return null;
     }
 
@@ -498,24 +522,28 @@ public partial class Main
             do
             {
                 string mainModulePath = ProcessInstance.MainModule.FileName;
-                if (string.IsNullOrEmpty(mainModulePath)) break;
+                if (string.IsNullOrEmpty(mainModulePath))
+                    break;
 
                 string mainModuleDir = Path.GetDirectoryName(mainModulePath);
                 filePath = Path.Combine(mainModuleDir, filePath);
 
-                if (!File.Exists(filePath)) return null;
+                if (!File.Exists(filePath))
+                    return null;
 
-                byte[] bytes = new byte[0];
+                byte[] bytes = [];
                 using (var md5 = MD5.Create())
                 {
-                    using (var file = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        bytes = md5.ComputeHash(file);
+                    using var file = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    bytes = md5.ComputeHash(file);
                 }
+
                 return bytes.Select(x => x.ToString("X2")).Aggregate((a, b) => a + b);
             }
             while (false);
         }
         catch { }
+
         return null;
     }
 
@@ -523,8 +551,10 @@ public partial class Main
     {
         try
         {
-            if (!string.IsNullOrEmpty(message)) TImports.OutputDebugString("[UHARA] " + message);
-            else TImports.OutputDebugString("[UHARA] " + "Trying to print null");
+            if (!string.IsNullOrEmpty(message))
+                TImports.OutputDebugString("[UHARA] " + message);
+            else
+                TImports.OutputDebugString("[UHARA] " + "Trying to print null");
         }
         catch { }
     }
@@ -622,7 +652,7 @@ public partial class Main
         {
             do
             {
-                //if (ProcessInstance != null && !ProcessInstance.HasExited && ProcessInstance.Handle != IntPtr.Zero)
+                //if (ProcessInstance != null && !ProcessInstance.HasExited && ProcessInstance.Handle != 0)
                 if (true)
                 {
                     foreach (var watcher in MemoryWatchers)
@@ -649,189 +679,259 @@ public partial class Main
                             MemoryWatcher memWatcher = watcher.memoryWatcher;
 
                             memWatcher.Update(ProcessInstance);
-                            if (memWatcher.Current == null) break;
-                            if ((IntPtr)memWatcher.Current == IntPtr.Zero) break;
+                            if (memWatcher.Current == null)
+                                break;
+                            if ((nint)memWatcher.Current == 0)
+                                break;
 
-                            ulong listAddr = (ulong)(IntPtr)(memWatcher.Current);
-                            if (listAddr == 0) break;
+                            ulong listAddr = (ulong)(nint)memWatcher.Current;
+                            if (listAddr == 0)
+                                break;
 
                             int itemSize = Marshal.SizeOf(type);
                             int count = TMemory.ReadMemory<ushort>(ProcessInstance, listAddr + 0x18);
                             int size = count * itemSize;
 
                             ulong listItemsAddr = 0;
-                            if (watcher.style == CountableStyle.Array) listItemsAddr = listAddr;
-                            else if (watcher.style == CountableStyle.List) listItemsAddr = TMemory.ReadMemory<ulong>(ProcessInstance, listAddr + 0x10);
+                            if (watcher.style == CountableStyle.Array)
+                                listItemsAddr = listAddr;
+                            else if (watcher.style == CountableStyle.List)
+                                listItemsAddr = TMemory.ReadMemory<ulong>(ProcessInstance, listAddr + 0x10);
 
                             byte[] listBytes = TMemory.ReadMemoryBytes(ProcessInstance, listItemsAddr + 0x20, size);
-                            if (listBytes == null || listBytes.Length == 0) break;
+                            if (listBytes == null || listBytes.Length == 0)
+                                break;
 
                             // race safety check
                             ulong repeatListPtr = watcher.deepPointer.Deref<ulong>(ProcessInstance);
-                            if (repeatListPtr != listAddr) break;
+                            if (repeatListPtr != listAddr)
+                                break;
 
                             // ---
-                            if (type == typeof(IntPtr))
+                            if (type == typeof(nint))
                             {
-                                List<IntPtr> list = new List<IntPtr>();
-                                for (int i = 0; i < size; i += itemSize) list.Add((IntPtr)BitConverter.ToInt64(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<nint> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add((nint)BitConverter.ToInt64(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
-                            else if (type == typeof(UIntPtr))
+                            else if (type == typeof(nuint))
                             {
-                                List<UIntPtr> list = new List<UIntPtr>();
-                                for (int i = 0; i < size; i += itemSize) list.Add((UIntPtr)BitConverter.ToUInt64(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<nuint> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add((nuint)BitConverter.ToUInt64(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(bool))
                             {
-                                List<bool> list = new List<bool>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToBoolean(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<bool> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToBoolean(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(byte))
                             {
-                                List<byte> list = new List<byte>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(listBytes[i]);
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<byte> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(listBytes[i]);
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(sbyte))
                             {
-                                List<sbyte> list = new List<sbyte>();
-                                for (int i = 0; i < size; i += itemSize) list.Add((sbyte)listBytes[i]);
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<sbyte> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add((sbyte)listBytes[i]);
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(char))
                             {
-                                List<char> list = new List<char>();
-                                for (int i = 0; i < size; i += itemSize) list.Add((char)listBytes[i]);
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<char> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add((char)listBytes[i]);
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(short))
                             {
-                                List<short> list = new List<short>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToInt16(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<short> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToInt16(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(ushort))
                             {
-                                List<ushort> list = new List<ushort>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToUInt16(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<ushort> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToUInt16(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(int))
                             {
-                                List<int> list = new List<int>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToInt32(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<int> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToInt32(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(uint))
                             {
-                                List<uint> list = new List<uint>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToUInt32(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<uint> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToUInt32(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(long))
                             {
-                                List<long> list = new List<long>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToInt64(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<long> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToInt64(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(ulong))
                             {
-                                List<ulong> list = new List<ulong>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToUInt64(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<ulong> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToUInt64(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(float))
                             {
-                                List<float> list = new List<float>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToSingle(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<float> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToSingle(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(double))
                             {
-                                List<double> list = new List<double>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(BitConverter.ToDouble(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<double> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(BitConverter.ToDouble(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
-
                             else if (type == typeof(decimal))
                             {
-                                List<decimal> list = new List<decimal>();
-                                for (int i = 0; i < size; i += itemSize) list.Add(TUtils.ToDecimal(listBytes, i));
-                                if (watcher.style == CountableStyle.Array) current[watcher.memoryWatcher.Name] = list.ToArray();
-                                else if (watcher.style == CountableStyle.List) current[watcher.memoryWatcher.Name] = list;
+                                List<decimal> list = [];
+                                for (int i = 0; i < size; i += itemSize)
+                                    list.Add(TUtils.ToDecimal(listBytes, i));
+                                if (watcher.style == CountableStyle.Array)
+                                    current[watcher.memoryWatcher.Name] = list.ToArray();
+                                else if (watcher.style == CountableStyle.List)
+                                    current[watcher.memoryWatcher.Name] = list;
                             }
 
                             success = true;
                         }
                         while (false);
 
-                        if (success) continue;
-                        else if (watcher.memoryWatcher.FailAction == MemoryWatcher.ReadFailAction.SetZeroOrNull) current[watcher.memoryWatcher.Name] = null;
+                        if (success)
+                            continue;
+                        else if (watcher.memoryWatcher.FailAction == MemoryWatcher.ReadFailAction.SetZeroOrNull)
+                            current[watcher.memoryWatcher.Name] = null;
                         else if (watcher.style == CountableStyle.Array)
                         {
-                            if (type == typeof(IntPtr)) current[watcher.memoryWatcher.Name] = new List<IntPtr>().ToArray();
-                            else if (type == typeof(UIntPtr)) current[watcher.memoryWatcher.Name] = new List<UIntPtr>().ToArray();
-                            else if (type == typeof(bool)) current[watcher.memoryWatcher.Name] = new List<bool>().ToArray();
-                            else if (type == typeof(byte)) current[watcher.memoryWatcher.Name] = new List<byte>().ToArray();
-                            else if (type == typeof(sbyte)) current[watcher.memoryWatcher.Name] = new List<sbyte>().ToArray();
-                            else if (type == typeof(char)) current[watcher.memoryWatcher.Name] = new List<char>().ToArray();
-                            else if (type == typeof(short)) current[watcher.memoryWatcher.Name] = new List<short>().ToArray();
-                            else if (type == typeof(ushort)) current[watcher.memoryWatcher.Name] = new List<ushort>().ToArray();
-                            else if (type == typeof(int)) current[watcher.memoryWatcher.Name] = new List<int>().ToArray();
-                            else if (type == typeof(uint)) current[watcher.memoryWatcher.Name] = new List<uint>().ToArray();
-                            else if (type == typeof(long)) current[watcher.memoryWatcher.Name] = new List<long>().ToArray();
-                            else if (type == typeof(ulong)) current[watcher.memoryWatcher.Name] = new List<ulong>().ToArray();
-                            else if (type == typeof(float)) current[watcher.memoryWatcher.Name] = new List<float>().ToArray();
-                            else if (type == typeof(double)) current[watcher.memoryWatcher.Name] = new List<double>().ToArray();
-                            else if (type == typeof(decimal)) current[watcher.memoryWatcher.Name] = new List<decimal>().ToArray();
+                            if (type == typeof(nint))
+                                current[watcher.memoryWatcher.Name] = new List<nint>().ToArray();
+                            else if (type == typeof(nuint))
+                                current[watcher.memoryWatcher.Name] = new List<nuint>().ToArray();
+                            else if (type == typeof(bool))
+                                current[watcher.memoryWatcher.Name] = new List<bool>().ToArray();
+                            else if (type == typeof(byte))
+                                current[watcher.memoryWatcher.Name] = new List<byte>().ToArray();
+                            else if (type == typeof(sbyte))
+                                current[watcher.memoryWatcher.Name] = new List<sbyte>().ToArray();
+                            else if (type == typeof(char))
+                                current[watcher.memoryWatcher.Name] = new List<char>().ToArray();
+                            else if (type == typeof(short))
+                                current[watcher.memoryWatcher.Name] = new List<short>().ToArray();
+                            else if (type == typeof(ushort))
+                                current[watcher.memoryWatcher.Name] = new List<ushort>().ToArray();
+                            else if (type == typeof(int))
+                                current[watcher.memoryWatcher.Name] = new List<int>().ToArray();
+                            else if (type == typeof(uint))
+                                current[watcher.memoryWatcher.Name] = new List<uint>().ToArray();
+                            else if (type == typeof(long))
+                                current[watcher.memoryWatcher.Name] = new List<long>().ToArray();
+                            else if (type == typeof(ulong))
+                                current[watcher.memoryWatcher.Name] = new List<ulong>().ToArray();
+                            else if (type == typeof(float))
+                                current[watcher.memoryWatcher.Name] = new List<float>().ToArray();
+                            else if (type == typeof(double))
+                                current[watcher.memoryWatcher.Name] = new List<double>().ToArray();
+                            else if (type == typeof(decimal))
+                                current[watcher.memoryWatcher.Name] = new List<decimal>().ToArray();
                         }
                         else if (watcher.style == CountableStyle.List)
                         {
-                            if (type == typeof(IntPtr)) current[watcher.memoryWatcher.Name] = new List<IntPtr>();
-                            else if (type == typeof(UIntPtr)) current[watcher.memoryWatcher.Name] = new List<UIntPtr>();
-                            else if (type == typeof(bool)) current[watcher.memoryWatcher.Name] = new List<bool>();
-                            else if (type == typeof(byte)) current[watcher.memoryWatcher.Name] = new List<byte>();
-                            else if (type == typeof(sbyte)) current[watcher.memoryWatcher.Name] = new List<sbyte>();
-                            else if (type == typeof(char)) current[watcher.memoryWatcher.Name] = new List<char>();
-                            else if (type == typeof(short)) current[watcher.memoryWatcher.Name] = new List<short>();
-                            else if (type == typeof(ushort)) current[watcher.memoryWatcher.Name] = new List<ushort>();
-                            else if (type == typeof(int)) current[watcher.memoryWatcher.Name] = new List<int>();
-                            else if (type == typeof(uint)) current[watcher.memoryWatcher.Name] = new List<uint>();
-                            else if (type == typeof(long)) current[watcher.memoryWatcher.Name] = new List<long>();
-                            else if (type == typeof(ulong)) current[watcher.memoryWatcher.Name] = new List<ulong>();
-                            else if (type == typeof(float)) current[watcher.memoryWatcher.Name] = new List<float>();
-                            else if (type == typeof(double)) current[watcher.memoryWatcher.Name] = new List<double>();
-                            else if (type == typeof(decimal)) current[watcher.memoryWatcher.Name] = new List<decimal>();
+                            if (type == typeof(nint))
+                                current[watcher.memoryWatcher.Name] = new List<nint>();
+                            else if (type == typeof(nuint))
+                                current[watcher.memoryWatcher.Name] = new List<nuint>();
+                            else if (type == typeof(bool))
+                                current[watcher.memoryWatcher.Name] = new List<bool>();
+                            else if (type == typeof(byte))
+                                current[watcher.memoryWatcher.Name] = new List<byte>();
+                            else if (type == typeof(sbyte))
+                                current[watcher.memoryWatcher.Name] = new List<sbyte>();
+                            else if (type == typeof(char))
+                                current[watcher.memoryWatcher.Name] = new List<char>();
+                            else if (type == typeof(short))
+                                current[watcher.memoryWatcher.Name] = new List<short>();
+                            else if (type == typeof(ushort))
+                                current[watcher.memoryWatcher.Name] = new List<ushort>();
+                            else if (type == typeof(int))
+                                current[watcher.memoryWatcher.Name] = new List<int>();
+                            else if (type == typeof(uint))
+                                current[watcher.memoryWatcher.Name] = new List<uint>();
+                            else if (type == typeof(long))
+                                current[watcher.memoryWatcher.Name] = new List<long>();
+                            else if (type == typeof(ulong))
+                                current[watcher.memoryWatcher.Name] = new List<ulong>();
+                            else if (type == typeof(float))
+                                current[watcher.memoryWatcher.Name] = new List<float>();
+                            else if (type == typeof(double))
+                                current[watcher.memoryWatcher.Name] = new List<double>();
+                            else if (type == typeof(decimal))
+                                current[watcher.memoryWatcher.Name] = new List<decimal>();
                         }
                     }
                 }
@@ -848,6 +948,7 @@ public partial class Main
             return CreateTool(engine, "default", tool);
         }
         catch { }
+
         return null;
     }
 
@@ -855,9 +956,11 @@ public partial class Main
     {
         ProcessInstance = null;
         TProcess.WaitTillSecondsOld(ProcessInstance, 1);
-        if (!ReloadProcess()) throw new Exception();
+        if (!ReloadProcess())
+            throw new Exception();
         TProcess.WaitTillSecondsOld(ProcessInstance, 1);
-        if (!ReloadProcess()) throw new Exception();
+        if (!ReloadProcess())
+            throw new Exception();
 
         try
         {
@@ -925,7 +1028,11 @@ public partial class Main
                 }
             }
         }
-        catch { Thread.Sleep(500); }
+        catch
+        {
+            Thread.Sleep(500);
+        }
+
         return null;
     }
 
@@ -933,7 +1040,13 @@ public partial class Main
     {
         try
         {
-            try { ProcessInstance = Process.GetProcessById(process.Id); } catch { };
+            try
+            {
+                ProcessInstance = Process.GetProcessById(process.Id);
+            }
+            catch { }
+
+            ;
         }
         catch { }
     }
