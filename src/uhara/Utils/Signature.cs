@@ -33,7 +33,7 @@ internal class TSignature
         return hex.Replace("-", " ");
     }
 
-    internal static byte[]? GetBytes(string signature)
+    internal static byte[] GetBytes(string signature)
     {
         signature = signature.Replace(" ", "").Replace("!", "").ToUpper();
         byte[] byteArray = new byte[signature.Length / 2];

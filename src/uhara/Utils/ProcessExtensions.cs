@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 
@@ -38,69 +37,48 @@ internal static class ProcessExtensions
 
         public byte[]? GetModuleBytes(string? name = null)
         {
-            do
-            {
-                var mod = GetModule(self, name);
+            if (self.GetModule(name) is not { BaseAddress: nint start and not 0, ModuleMemorySize: int size and not 0 })
+                return null;
 
-                ulong start = (ulong)mod.BaseAddress;
-                if (start == 0)
-                    break;
-                ulong size = (ulong)mod.ModuleMemorySize;
-                if (size == 0)
-                    break;
-
-                return TMemory.ReadMemoryBytes(self, start, (int)size);
-            }
-            while (false);
-            return null;
+            return TMemory.ReadMemoryBytes(self, start, size);
         }
 
-        public ulong GetProcAddress(string moduleName, string functionName)
+        public nint GetProcAddress(string moduleName, string functionName)
         {
-            do
-            {
-                ProcessModule? module = GetModule(self, moduleName);
-                if (module == null)
-                    break;
+            if (self.GetModule(moduleName) is not { BaseAddress: nint start and not 0 })
+                return 0;
 
-                ulong moduleBase = (ulong)module.BaseAddress;
-                if (moduleBase == 0)
-                    break;
-
-                return GetProcAddress(self, moduleBase, functionName);
-            }
-            while (false);
-            return 0;
+            return GetProcAddress(self, start, functionName);
         }
 
-        public ulong GetProcAddress(ulong moduleBase, string functionName)
+        public nint GetProcAddress(nint moduleBase, string functionName)
         {
             byte[] searchNameBytes = TUtils.StringToMultibyte(functionName);
 
-            ulong rbx = moduleBase;
-            ulong rax = TMemory.ReadMemory<uint>(self, moduleBase + 0x3C);
+            nint rbx = moduleBase;
+            nint rax = TMemory.ReadMemory<int>(self, moduleBase + 0x3C);
             rax += rbx; // ntHeader
-            ulong rcx = TMemory.ReadMemory<uint>(self, rax + 0x88); // export RVA
+            nint rcx = TMemory.ReadMemory<int>(self, rax + 0x88); // export RVA
             rcx += rbx; // exportDir absolute
-            ulong r10 = TMemory.ReadMemory<uint>(self, rcx + 0x18); // NumberOfNames
-            ulong r11 = TMemory.ReadMemory<uint>(self, rcx + 0x20); // AddressOfNames RVA
+            nint r10 = TMemory.ReadMemory<int>(self, rcx + 0x18); // NumberOfNames
+            nint r11 = TMemory.ReadMemory<int>(self, rcx + 0x20); // AddressOfNames RVA
             r11 += rbx; // absolute
-            ulong r12 = TMemory.ReadMemory<uint>(self, rcx + 0x24); // AddressOfNameOrdinals RVA
+            nint r12 = TMemory.ReadMemory<int>(self, rcx + 0x24); // AddressOfNameOrdinals RVA
             r12 += rbx; // absolute
-            ulong r13 = TMemory.ReadMemory<uint>(self, rcx + 0x1C); // AddressOfFunctions RVA
+            nint r13 = TMemory.ReadMemory<int>(self, rcx + 0x1C); // AddressOfFunctions RVA
             r13 += rbx; // absolute
-            ulong rdx = 0;
+            nint rdx = 0;
 
             while (rdx < r10)
             {
-                rax = TMemory.ReadMemory<uint>(self, r11 + (rdx * 4)); // name RVA
+                rax = TMemory.ReadMemory<int>(self, r11 + (rdx * 4)); // name RVA
                 rax += rbx; // absolute ptr to name string
 
                 byte[]? nameBytes = TMemory.ReadMemoryBytes(self, rax, searchNameBytes.Length);
                 if (nameBytes != null && nameBytes.SequenceEqual(searchNameBytes))
                 {
-                    ulong ordinal = TMemory.ReadMemory<ushort>(self, r12 + (rdx * 2));
-                    ulong funcRVA = TMemory.ReadMemory<uint>(self, r13 + (ordinal * 4));
+                    short ordinal = TMemory.ReadMemory<short>(self, r12 + (rdx * 2));
+                    int funcRVA = TMemory.ReadMemory<int>(self, r13 + (ordinal * 4));
                     return rbx + funcRVA;
                 }
 

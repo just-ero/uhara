@@ -1,8 +1,9 @@
-# IDE options/cache directories
+# IDE options/cache
 .vs/*
 .vscode/*
 .idea/*
 .zed/*
+*.lscache
 
 !.vscode/settings.json
 
@@ -13,5 +14,4 @@ obj/
 BenchmarkDotNet.Artifacts/
 
 # User-specific files
-*.lscache
 *.user

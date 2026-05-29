@@ -3,6 +3,7 @@
   <PropertyGroup>
     <AssemblyName>uhara10</AssemblyName>
 
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <TargetFramework>net4.8.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>

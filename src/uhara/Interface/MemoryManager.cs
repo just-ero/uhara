@@ -8,7 +8,7 @@ internal class MemoryManager
     private static readonly string Allocate = "Allocate";
     private static readonly string Overwrite = "Overwrite";
 
-    private static void FreeMemoryDelayed(ulong address, int size)
+    private static void FreeMemoryDelayed(nint address, int size)
     {
         try
         {
@@ -21,7 +21,7 @@ internal class MemoryManager
         catch { }
     }
 
-    private static void _FreeMemoryDelayed(ulong address, int size)
+    private static void _FreeMemoryDelayed(nint address, int size)
     {
         try
         {
@@ -40,13 +40,13 @@ internal class MemoryManager
         catch { }
     }
 
-    internal static ulong AllocateTimeLimited(int size, int time)
+    internal static nint AllocateTimeLimited(int size, int time)
     {
         try
         {
             do
             {
-                ulong allocated = (ulong)Main.ProcessInstance.AllocateMemory(size);
+                nint allocated = Main.ProcessInstance.AllocateMemory(size);
                 if (allocated == 0)
                     break;
 
@@ -60,21 +60,21 @@ internal class MemoryManager
         return 0;
     }
 
-    internal static void FreeLargeMemoryInternal(ulong address, int size, int delay = 60000)
+    internal static void FreeLargeMemoryInternal(nint address, int size, int delay = 60000)
     {
         try
         {
             do
             {
-                ulong _Sleep = Main.ProcessInstance.GetProcAddress("kernel32.dll", "Sleep");
+                nint _Sleep = Main.ProcessInstance.GetProcAddress("kernel32.dll", "Sleep");
                 if (_Sleep == 0)
                     break;
 
-                ulong _VirtualFree = Main.ProcessInstance.GetProcAddress("kernel32.dll", "VirtualFree");
+                nint _VirtualFree = Main.ProcessInstance.GetProcAddress("kernel32.dll", "VirtualFree");
                 if (_VirtualFree == 0)
                     break;
 
-                ulong allocated = (ulong)Main.ProcessInstance.AllocateMemory(0x1000);
+                nint allocated = Main.ProcessInstance.AllocateMemory(0x1000);
                 if (allocated == 0)
                     break;
 
@@ -96,8 +96,8 @@ internal class MemoryManager
                     .. bytesExec
                 ];
 
-                Main.ProcessInstance.WriteBytes((nint)allocated, writeBytes);
-                Main.ProcessInstance.CreateThread((nint)(allocated + 0x28));
+                Main.ProcessInstance.WriteBytes(allocated, writeBytes);
+                Main.ProcessInstance.CreateThread(allocated + 0x28);
             }
             while (false);
         }
@@ -126,13 +126,13 @@ internal class MemoryManager
                             if (dataRaw == null)
                                 continue;
 
-                            ulong address = TConvert.Parse<ulong>(valueName);
+                            nint address = (nint)TConvert.Parse<long>(valueName);
                             byte[] recover = TSignature.GetBytes(dataRaw);
 
                             if (address == 0 || recover == null)
                                 continue;
 
-                            Main.ProcessInstance.WriteBytes((nint)address, recover);
+                            Main.ProcessInstance.WriteBytes(address, recover);
                             if (!TMemory.ConfirmBytes(Main.ProcessInstance, address, recover))
                                 throw new Exception("Memory recovery exception");
 
@@ -151,7 +151,7 @@ internal class MemoryManager
                             if (dataRaw == null)
                                 continue;
 
-                            ulong address = TConvert.Parse<ulong>(valueName);
+                            nint address = (nint)TConvert.Parse<long>(valueName);
                             int size = TConvert.Parse<int>(dataRaw);
 
                             if (address == 0 || size == 0)
@@ -168,11 +168,11 @@ internal class MemoryManager
         catch { }
     }
 
-    internal static ulong AllocateSafe(int size, string uniqueId = "")
+    internal static nint AllocateSafe(int size, string uniqueId = "")
     {
         try
         {
-            ulong address = (ulong)Main.ProcessInstance.AllocateMemory(size);
+            nint address = Main.ProcessInstance.AllocateMemory(size);
             if (address != 0)
             {
                 string token = Main.ProcessInstance.Token;
@@ -187,7 +187,7 @@ internal class MemoryManager
         return 0;
     }
 
-    internal static void AddOverwrite(ulong address, byte[] recover, string uniqueId = "")
+    internal static void AddOverwrite(nint address, byte[] recover, string uniqueId = "")
     {
         try
         {

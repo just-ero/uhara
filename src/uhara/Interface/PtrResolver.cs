@@ -220,7 +220,7 @@ public class PtrResolver
                 };
 
                 // ---
-                ulong listAddr = deepPointer.Deref<ulong>(Main.ProcessInstance);
+                nint listAddr = deepPointer.Deref<nint>(Main.ProcessInstance);
                 if (listAddr == 0)
                     break;
 
@@ -228,24 +228,16 @@ public class PtrResolver
                 int count = TMemory.ReadMemory<ushort>(Main.ProcessInstance, listAddr + 0x18);
                 int size = count * itemSize;
 
-                ulong listItemsAddr = listAddr;
+                nint listItemsAddr = listAddr;
                 byte[] listBytes = TMemory.ReadMemoryBytes(Main.ProcessInstance, listItemsAddr + 0x20, size);
                 if (listBytes == null || listBytes.Length == 0)
                     break;
 
                 // race safety check
-                if (listAddr != deepPointer.Deref<ulong>(Main.ProcessInstance))
+                if (listAddr != deepPointer.Deref<nint>(Main.ProcessInstance))
                     break;
 
-                // ---
-                List<T> list = [];
-                for (int i = 0; i < size; i += itemSize)
-                {
-                    var value = MemoryMarshal.Read<T>(listBytes.AsSpan(i, itemSize));
-                    list.Add(value);
-                }
-
-                return [.. list];
+                return MemoryMarshal.Cast<byte, T>(listBytes).ToArray();
             }
             while (false);
         }
@@ -296,7 +288,7 @@ public class PtrResolver
                 };
 
                 // ---
-                ulong listAddr = deepPointer.Deref<ulong>(Main.ProcessInstance);
+                nint listAddr = deepPointer.Deref<nint>(Main.ProcessInstance);
                 if (listAddr == 0)
                     break;
 
@@ -304,13 +296,13 @@ public class PtrResolver
                 int count = TMemory.ReadMemory<ushort>(Main.ProcessInstance, listAddr + 0x18);
                 int size = count * itemSize;
 
-                ulong listItemsAddr = TMemory.ReadMemory<ulong>(Main.ProcessInstance, listAddr + 0x10);
+                nint listItemsAddr = TMemory.ReadMemory<nint>(Main.ProcessInstance, listAddr + 0x10);
                 byte[] listBytes = TMemory.ReadMemoryBytes(Main.ProcessInstance, listItemsAddr + 0x20, size);
                 if (listBytes == null || listBytes.Length == 0)
                     break;
 
                 // race safety check
-                if (listAddr != deepPointer.Deref<ulong>(Main.ProcessInstance))
+                if (listAddr != deepPointer.Deref<nint>(Main.ProcessInstance))
                     break;
 
                 // ---
